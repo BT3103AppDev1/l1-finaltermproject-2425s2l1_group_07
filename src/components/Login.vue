@@ -1,6 +1,5 @@
 <template>
     <div>
-      <Navbar />
       <div class="login-container">
         <div class="login-card">
           <h2>Welcome to MatchUp! 🏆</h2>
@@ -34,12 +33,9 @@
   </template>
   
   <script>
-  import Navbar from "@/components/Navbar.vue";
+  
   
   export default {
-    components: {
-      Navbar,
-    },
     data() {
       return {
         email: "",

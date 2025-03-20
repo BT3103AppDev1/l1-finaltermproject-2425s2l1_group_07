@@ -1,6 +1,6 @@
 <template>
     <div>
-      <Navbar />
+
       <div class="signup-container">
         <div class="signup-card">
           <h2>Create Your Account</h2>
@@ -18,7 +18,7 @@
             <button type="submit" class="signup-btn">Sign Up</button>
           </form>
           <div class="links">
-            <router-link to="/login">Already have an account? Login</router-link>
+            <router-link to="/Login">Already have an account? Login</router-link>
           </div>
         </div>
       </div>
@@ -26,10 +26,9 @@
   </template>
   
   <script>
-  import Navbar from './Navbar.vue';
+
   
   export default {
-    components: { Navbar },
     data() {
       return {
         name: '',

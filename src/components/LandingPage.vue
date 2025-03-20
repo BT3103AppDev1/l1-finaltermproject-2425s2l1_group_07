@@ -6,7 +6,8 @@
           <nav>
             <ul>
               <li><a href="#">Contact</a></li>
-              <li><button class="login-btn">Log In</button></li>
+              <li><router-link to="/Login" class="login-btn">Log In</router-link></li>
+
             </ul>
           </nav>
         </header>
@@ -22,8 +23,10 @@
               <li>Meet & have fun!</li>
             </ol>
         </h3>
-         
-          <button class="signup-btn">Join in the fun <span class="arrow">→</span></button>
+
+            <router-link to="/SignUp" class="signup-btn">Join in the fun <span class="arrow">→</span></router-link>
+
+          
         </div>
       </div>
       
@@ -176,6 +179,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
   }
   
   .signup-btn:hover {
