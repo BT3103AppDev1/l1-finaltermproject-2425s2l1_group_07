@@ -1,6 +1,7 @@
 <template>
     <div>
       <div class="login-container">
+        <router-link to="/" class="logo">MatchUp</router-link>
         <div class="login-card">
           <h2>Welcome to MatchUp! 🏆</h2>
           <p class="subtitle">Find and join sports matches near you.</p>
@@ -56,15 +57,39 @@
   </script>
   
   <style scoped>
-  /* Centered Login Box */
-  .login-container {
+
+.logo {
+    font-size: 32px;
+    font-weight: 700;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
+    padding: 20px 5%;
+    margin: 0; /* Remove margin to avoid extra space */
+    position: fixed; /* Fix logo to the top */
+    top: 0;
+    left: 0;
     width: 100%;
-    margin-top: 80px;
+    z-index: 1;
+    background: rgba(72, 27, 112, 0.8);
+    box-shadow: 0px 4px 10px rgba(242, 238, 238, 0.3);
+    color: white;
+    text-decoration: none;
   }
+
+/* Centered Login Box */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  position: absolute;
+  top: 0; 
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(to right bottom, rgba(72, 27, 112, 0.67), rgba(116, 76, 151, 0.7));
+}
+
   
   .login-card {
     background: white;

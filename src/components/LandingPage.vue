@@ -180,11 +180,19 @@
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     text-decoration: none;
+    position: relative;
   }
+
+.arrow {
+  margin-left: 5px; /* Adds space between text and arrow */
+  margin-top: 2px;
+  display: inline-block;
+  transition: transform 0.3s ease; /* Smooth transition for the arrow */
+}
   
-  .signup-btn:hover {
-    background-color:  #744c97;
-    transform: translateY(-2px);
+.signup-btn:hover {
+    color:  #5c2b87;
+    background-color: white;
   }
 
 .signup-btn:hover .arrow {
