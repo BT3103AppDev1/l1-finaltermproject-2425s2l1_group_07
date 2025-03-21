@@ -41,7 +41,7 @@
             <label for="description">Description / Additional Remarks</label>
             <textarea v-model="newListing.description" id="description" rows="4" placeholder="e.g Equipment to bring: Racket"></textarea>
 
-            <button type="submit">Find Player(s)</button>
+            <button type="submit" @click="goBack">Find Player(s)</button>
           
         </form>
     </div>
@@ -72,7 +72,7 @@ export default {
     },
     methods: {
         goBack() {
-            this.router.push('/');
+            this.router.push('/Explore');
         },
         addListing() {
             const database = getDatabase();
@@ -86,8 +86,8 @@ export default {
 </script>
 
 <style scoped>
-/* Ensure full screen */
-body, html {
+/* Ensure full screen and center content */
+template {
     font-family: 'Roboto', sans-serif;
     background-color: #f4f4f4;
     height: 100vh;
@@ -101,7 +101,7 @@ body, html {
 /* Main container */
 .container {
     background: white;
-    width: 50%; /* Adjusted for better layout */
+    width: 50%; /* Fixed width for a smaller container */
     height: auto;
     padding: 40px;
     border-radius: 8px;
@@ -111,6 +111,8 @@ body, html {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    margin-left: auto;  /* Centers the container horizontally */
+    margin-right: auto; /* Centers the container horizontally */
 }
 
 /* Close button */
@@ -132,8 +134,18 @@ body, html {
 .heading {
     font-family: 'Roboto', sans-serif;
     font-weight: bold;
-    text-align: center;
+    text-align: left;
     margin-bottom: 20px;
+    display: flex;
+    justify-content: left;
+    align-items: left;
+}
+
+/* Horizontal line styling */
+hr {
+    width: 100%;
+    border: 0.5px solid #ccc; /* Light grey line */
+    margin: 10px 0;
 }
 
 /* Form layout */
@@ -152,6 +164,10 @@ input, select, textarea {
     border: 1px solid #ccc;
     border-radius: 5px;
     background-color: #f8f8f8;
+}
+
+textarea {
+    resize: vertical;
 }
 
 /* Labels */
@@ -209,11 +225,9 @@ button[type="submit"]:hover {
     }
 }
 
-@media screen and (max-width: 5000px) and  (max-height:5000px) {
+@media screen and (max-width: 500px) {
     .container {
-        width: 80%;
-        height: 80%
-        
+        width: 90%;
     }
 }
 </style>
