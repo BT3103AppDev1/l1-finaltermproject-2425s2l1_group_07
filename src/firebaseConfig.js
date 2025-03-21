@@ -2,8 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
-
-// Your Firebase configuration (KEEP THIS SECRET & DO NOT EXPOSE IN PUBLIC REPOS)
+import { getFirestore } from "firebase/firestore"; // ✅ Import Firestore
 const firebaseConfig = {
     apiKey: "AIzaSyD43V2H...",
     authDomain: "bt3103-matchup.firebaseapp.com",

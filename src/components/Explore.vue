@@ -25,8 +25,8 @@
   </template>
   
   <script>
-  import { initializeApp } from "firebase/app";
-  import { getDatabase, ref, onValue } from "firebase/database";
+  import { ref, onValue } from "firebase/database";
+  import { database } from "@/firebaseConfig"
   import Navbar from "@/components/Navbar.vue"; // Import the navbar component
   
 
