@@ -84,7 +84,7 @@
   </template>
   
   <script>
-  import { db } from "@/firebase/firebaseConfig";
+  import { db } from "firebaseConfig";
   import { doc, getDoc, setDoc } from "firebase/firestore";
   
   export default {

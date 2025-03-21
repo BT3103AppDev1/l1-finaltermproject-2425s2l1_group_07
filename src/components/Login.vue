@@ -1,42 +1,34 @@
 <template>
-    <div>
-      <div class="login-container">
-        <router-link to="/" class="logo">MatchUp</router-link>
-        <div class="login-card">
-          <h2>Welcome to MatchUp! 🏆</h2>
-          <p class="subtitle">Find and join sports matches near you.</p>
-          <form @submit.prevent="login">
-            <div class="input-group">
-              <input
-                type="email"
-                v-model="email"
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-            <div class="input-group">
-              <input
-                type="password"
-                v-model="password"
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-            <button type="submit" class="login-btn">Login</button>
-          </form>
-          <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-          <div class="links">
-            <a href="/signup">Sign Up</a>
-          </div>
+  <div>
+    <navbar></navbar>
+    <div class="login-container">
+      <div class="login-card">
+        <h2>Welcome to MatchUp! 🏆</h2>
+        <p class="subtitle">Find and join sports matches near you.</p>
+        <form @submit.prevent="login">
+          <input type="email" v-model="email" placeholder="Enter your email" required/>
+          <input type="password" v-model="password" placeholder="Enter your password" required />
+          <button type="submit" class="login-btn">Login</button>
+        </form>
+        <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+        <div class="links">
+          <router-link to="/SignUp">Create an Account</router-link>
         </div>
       </div>
     </div>
-  </template>
+  </div>
+</template>
   
-  <script>
-  
-  
+<script>
+import { useRouter } from 'vue-router';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+
+
   export default {
+    setup() {
+        const router = useRouter();
+        return { router };
+    },
     data() {
       return {
         email: "",
@@ -53,44 +45,47 @@
         }
       },
     },
+    components: {
+      Navbar
+    }
   };
-  </script>
+</script>
   
-  <style scoped>
+<style scoped>
+    .logo {
+        font-size: 32px;
+        font-weight: 700;
+        display: flex;
+        padding: 20px 5%;
+        margin: 0; /* Remove margin to avoid extra space */
+        position: fixed; /* Fix logo to the top */
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1;
+        background: rgba(72, 27, 112, 0.8);
+        box-shadow: 0px 4px 10px rgba(242, 238, 238, 0.3);
+        color: white;
+        text-decoration: none;
+    }
 
-.logo {
-    font-size: 32px;
-    font-weight: 700;
-    display: flex;
-    padding: 20px 5%;
-    margin: 0; /* Remove margin to avoid extra space */
-    position: fixed; /* Fix logo to the top */
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1;
-    background: rgba(72, 27, 112, 0.8);
-    box-shadow: 0px 4px 10px rgba(242, 238, 238, 0.3);
-    color: white;
-    text-decoration: none;
-  }
+    /* Centered Login Box */
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        position: absolute;
+        top: 0; 
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        background: linear-gradient(to right bottom, rgba(72, 27, 112, 0.67), rgba(116, 76, 151, 0.7));
+        /*make the bg same as landing page*/
+    }
 
-/* Centered Login Box */
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  position: absolute;
-  top: 0; 
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  background: linear-gradient(to right bottom, rgba(72, 27, 112, 0.67), rgba(116, 76, 151, 0.7));
-}
-
-  
+    
   .login-card {
     background: white;
     padding: 2rem;
@@ -116,10 +111,12 @@
     font-size: 16px;
     margin-bottom: 20px;
   }
-  
-  /* Input Fields */
-  .input-group {
-    margin-bottom: 15px;
+
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
   
   input {
@@ -133,6 +130,7 @@
     color: #333;
     text-align: center;
     transition: 0.3s ease;
+    margin-bottom: 15px;
   }
   
   input::placeholder {
@@ -183,5 +181,5 @@
   .links a:hover {
     text-decoration: underline;
   }
-  </style>
+</style>
   
