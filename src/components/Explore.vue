@@ -29,19 +29,7 @@
   import { getDatabase, ref, onValue } from "firebase/database";
   import Navbar from "@/components/Navbar.vue"; // Import the navbar component
   
-  const firebaseConfig = {
-    apiKey: "AIzaSyD43V2HIX_PDP5P6fxktVPXjhh1Lv994LU",
-    authDomain: "bt3103-matchup.firebaseapp.com",
-    databaseURL: "https://bt3103-matchup-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "bt3103-matchup",
-    storageBucket: "bt3103-matchup.appspot.com",
-    messagingSenderId: "132707622798",
-    appId: "1:132707622798:web:b30dcd6dd26c639400cedf",
-    measurementId: "G-EY15PSDKMD"
-  };
-  
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
+
   
   export default {
     components: {
