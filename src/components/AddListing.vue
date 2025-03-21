@@ -42,6 +42,7 @@
             <textarea v-model="newListing.description" id="description" rows="4" placeholder="e.g Equipment to bring: Racket"></textarea>
 
             <button type="submit">Find Player(s)</button>
+          
         </form>
     </div>
 </template>
