@@ -9,7 +9,7 @@
         <ul class="nav-links">
           <li><a href="#">Favourites</a></li>
           <li><a href="#">Chats</a></li>
-          <li><a href="#"><strong>My Profile</strong></a></li>
+          <li><router-link to="/profile"><i class="fas fa-user"></i> <strong>My Profile</strong></router-link></li>
         </ul>
       </nav>
   
@@ -84,9 +84,6 @@
   </template>
   
   <script>
-  import { db } from "firebaseConfig";
-  import { doc, getDoc, setDoc } from "firebase/firestore";
-  
   export default {
     components: {
       Navbar // Register Navbar component
