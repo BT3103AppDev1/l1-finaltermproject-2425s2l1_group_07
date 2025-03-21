@@ -26,11 +26,9 @@
   
   <script>
   import { ref, onValue } from "firebase/database";
-  import { database } from "@/firebaseConfig"
+  import { database } from "@/firebase.js"
   import Navbar from "@/components/Navbar.vue"; // Import the navbar component
-  
 
-  
   export default {
     components: {
       Navbar // Register Navbar component

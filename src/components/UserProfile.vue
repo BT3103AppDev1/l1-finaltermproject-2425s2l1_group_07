@@ -1,17 +1,6 @@
 <template>
     <div>
         <navbar></navbar>
-      <nav class="navbar">
-        <div class="nav-left">
-          <div class="logo">MatchUp</div>
-          <button class="list-button">Add new listing</button>
-        </div>
-        <ul class="nav-links">
-          <li><a href="#">Favourites</a></li>
-          <li><a href="#">Chats</a></li>
-          <li><router-link to="/profile"><i class="fas fa-user"></i> <strong>My Profile</strong></router-link></li>
-        </ul>
-      </nav>
   
       <div class="container">
         <div v-if="!editMode">
@@ -84,6 +73,8 @@
   </template>
   
   <script>
+  import Navbar from "@/components/Navbar.vue";
+
   export default {
     components: {
       Navbar // Register Navbar component

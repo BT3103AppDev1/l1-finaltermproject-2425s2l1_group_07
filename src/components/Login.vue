@@ -2,12 +2,12 @@
   <div>
     <navbar></navbar>
     <div class="login-container">
-      <div class="login-card">
+      <div class="login-card" ref="cardRef" @click.stop>
         <h2>Welcome to MatchUp! 🏆</h2>
         <p class="subtitle">Find and join sports matches near you.</p>
         <form @submit.prevent="login">
-          <input type="email" v-model="email" placeholder="Enter your email" required/>
-          <input type="password" v-model="password" placeholder="Enter your password" required />
+          <input type="email" v-model="email" placeholder="Email" required/>
+          <input type="password" v-model="password" placeholder="Password" required />
           <button type="submit" class="login-btn">Login</button>
         </form>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
@@ -20,34 +20,50 @@
 </template>
   
 <script>
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-
+import { auth } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import Navbar from "@/components/Navbar.vue";
 
   export default {
-    setup() {
-        const router = useRouter();
-        return { router };
-    },
-    data() {
-      return {
-        email: "",
-        password: "",
-        errorMessage: "",
-      };
-    },
-    methods: {
-      login() {
-        if (this.email === "user@example.com" && this.password === "password123") {
-          alert("Login successful! Redirecting...");
-        } else {
-          this.errorMessage = "Invalid email or password. Please try again.";
-        }
-      },
-    },
     components: {
       Navbar
-    }
+    },
+    setup() {
+        const router = useRouter();
+        const email = ref("");
+        const password = ref("");
+        const errorMessage = ref("");
+        const cardRef = ref(null);
+
+        const login = async () => {
+          try {
+            await signInWithEmailAndPassword(auth, email.value, password.value);
+            alert("Login successful!");
+            router.push("/Explore");
+          } catch (error) {
+            errorMessage.value = "Invalid email or password. Please try again.";
+            console.error("Login Error:", error.message);
+          }
+        };
+
+        const handleClickOutside = (event) => {
+          if (cardRef.value && !cardRef.value.contains(event.target)) {
+            router.push("/");
+          }
+        };
+
+        onMounted(() => {
+          document.addEventListener('click', handleClickOutside);
+        });
+
+        onBeforeUnmount(() => {
+          document.removeEventListener('click', handleClickOutside);
+        });
+
+    return { email, password, errorMessage, cardRef, login };
+    },
   };
 </script>
   

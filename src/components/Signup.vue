@@ -2,10 +2,7 @@
     <navbar></navbar>
     <div>
         <div class="signup-container">
-        <div class="logo">MatchUp</div>
-        <router-link to="/" class="logo">MatchUp</router-link>
-        
-        <div class="signup-card">
+        <div class="signup-card" ref="cardRef" @click.stop>
             <h2>Welcome to MatchUp! 🏆</h2>
             <p class="subtitle">Create your account and start playing!</p>
             <form @submit.prevent="signup">
@@ -14,8 +11,9 @@
                 <input type="password" v-model="password" placeholder="Password" required>
                 <button type="submit" class="signup-btn">Sign Up</button>
             </form>
+            <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
             <div class="links">
-            <router-link to="/Login">Already have an account? Login</router-link>
+              <router-link to="/Login">Already have an account? Login</router-link>
             </div>
         </div>
         </div>
@@ -23,23 +21,53 @@
 </template>
   
 <script>
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { useRouter } from 'vue-router';
+import { auth } from '@/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import Navbar from "@/components/Navbar.vue";
+
   export default {
-    data() {
-      return {
-        name: '',
-        email: '',
-        password: ''
-      };
-    },
-    methods: {
-      signup() {
-        alert(`Signing up with Name: ${this.name}, Email: ${this.email}`);
-        // Here you can add signup logic
-      }
-    },
     components: {
       Navbar
-    }
+    },
+    setup() {
+        const router = useRouter();
+        const name = ref("")
+        const email = ref("");
+        const password = ref("");
+        const errorMessage = ref("");
+        const cardRef = ref(null);
+
+        const signup = async () => {
+          try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
+          const user = userCredential.user;
+          console.log('User signed up:', user);
+          alert(`Signup successful! Welcome, ${name.value}`);
+          router.push("/Explore");
+          } catch (error) {
+            errorMessage.value = "Signup failed. Please try again."
+            console.error('Signup error:', error.code, error.message);
+          }
+        }
+
+        const handleClickOutside = (event) => {
+          if (cardRef.value && !cardRef.value.contains(event.target)) {
+            router.push("/");
+          }
+        };
+
+        onMounted(() => {
+          document.addEventListener('click', handleClickOutside);
+        });
+
+        onBeforeUnmount(() => {
+          document.removeEventListener('click', handleClickOutside);
+        });
+
+      return { name, email, password, errorMessage, cardRef, signup };
+    },
   };
 </script>
   
