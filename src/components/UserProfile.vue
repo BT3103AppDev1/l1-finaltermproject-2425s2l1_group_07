@@ -1,6 +1,6 @@
 <template>
     <div>
-        <navbar></navbar>
+      <navbar></navbar> 
       <nav class="navbar">
         <div class="nav-left">
           <div class="logo">MatchUp</div>
@@ -84,23 +84,22 @@
   </template>
   
   <script>
-  import { db } from "@/firebase/firebaseConfig";
+<<<<<<< HEAD
+  import { db } from "@/firebaseConfig.js";
   import { doc, getDoc, setDoc } from "firebase/firestore";
   
+=======
+>>>>>>> 6160585a743839e0f18fe43478236437f092faee
   export default {
-    components: {
-      Navbar // Register Navbar component
-    },
     name: "UserProfile",
     data() {
       return {
         editMode: false,
-        userId: "janedoe", // Replace with auth user UID in real app
         user: {
           username: "janedoe",
           profilePicture: "",
-          about: "",
-          sports: [],
+          about: "I'm an avid sports enthusiast who loves playing tennis, badminton, and soccer.",
+          sports: ["Tennis", "Badminton", "Soccer", "Basketball"],
         },
         editedUser: {
           profilePicture: "",
@@ -129,50 +128,21 @@
         ],
       };
     },
-    async created() {
-      await this.fetchUserProfile();
-    },
     methods: {
-      async fetchUserProfile() {
-        try {
-          const docRef = doc(db, "users", this.userId);
-          const docSnap = await getDoc(docRef);
-  
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            this.user.profilePicture = data.profilePicture || "";
-            this.user.about = data.about || "";
-            this.user.sports = data.sports || [];
-          }
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
-        }
-      },
       startEditing() {
         this.editMode = true;
-        this.editedUser.about = this.user.about;
         this.editedUser.profilePicture = this.user.profilePicture;
+        this.editedUser.about = this.user.about;
         this.editedUser.sportsInput = this.user.sports.join(", ");
       },
-      async saveChanges() {
-        this.user.about = this.editedUser.about;
+      saveChanges() {
         this.user.profilePicture = this.editedUser.profilePicture;
+        this.user.about = this.editedUser.about;
         this.user.sports = this.editedUser.sportsInput
           .split(",")
           .map((s) => s.trim())
           .filter((s) => s);
-  
-        try {
-          await setDoc(doc(db, "users", this.userId), {
-            username: this.user.username,
-            profilePicture: this.user.profilePicture,
-            about: this.user.about,
-            sports: this.user.sports,
-          });
-          this.editMode = false;
-        } catch (error) {
-          console.error("Error saving profile:", error);
-        }
+        this.editMode = false;
       },
       cancelEditing() {
         this.editMode = false;
