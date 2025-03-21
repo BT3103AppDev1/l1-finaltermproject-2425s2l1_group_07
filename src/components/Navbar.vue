@@ -8,9 +8,22 @@
       <button class="list-button" @click="goToAddListing">Add new listing +</button>
     </div>
     <ul class="nav-links">
-      <li><a href="#"><i class="fas fa-heart"></i>   Favourites</a></li>
-      <li><a href="#"><i class="fas fa-comment-dots"></i>   Chats</a></li>
-      <li><a href="#"><i class="fas fa-user"></i>   My Profile</a></li>
+    <li>
+        <router-link to="/favourites">
+            <i class="fas fa-heart"></i> Favourites
+        </router-link>
+    </li>
+    <li>
+        <router-link to="/chats">
+            <i class="fas fa-comment-dots"></i> Chats
+        </router-link>
+    </li>
+        <li>
+        <router-link to="/profile">
+            <i class="fas fa-user"></i> My Profile
+        </router-link>
+    </li>
+
     </ul>
   </nav>
   </template>

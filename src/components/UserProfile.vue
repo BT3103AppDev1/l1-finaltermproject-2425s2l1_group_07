@@ -9,7 +9,8 @@
         <ul class="nav-links">
           <li><a href="#">Favourites</a></li>
           <li><a href="#">Chats</a></li>
-          <li><a href="#"><strong>My Profile</strong></a></li>
+          <li><router-link to="/profile"><strong>My Profile</strong></router-link></li>
+
         </ul>
       </nav>
   
@@ -84,6 +85,7 @@
   </template>
   
   <script>
+  
   export default {
     name: "UserProfile",
     data() {
