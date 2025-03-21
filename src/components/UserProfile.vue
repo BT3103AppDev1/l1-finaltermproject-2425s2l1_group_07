@@ -85,6 +85,7 @@
   </template>
   
   <script>
+  
   export default {
     name: "UserProfile",
     data() {
