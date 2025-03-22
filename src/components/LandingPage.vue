@@ -7,7 +7,7 @@
             <ul>
               <li><a href="#">Contact</a></li>
               <li><router-link to="/Explore" class="login-btn">EXPLORE rm later</router-link></li>
-              <li><router-link to="/Login" class="login-btn">Log In</router-link></li>
+              <li><router-link to="/login" class="login-btn">Log In</router-link></li>
 
             </ul>
           </nav>

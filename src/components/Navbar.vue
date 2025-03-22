@@ -4,7 +4,9 @@
 
     <nav class="navbar">
     <div class="nav-left">
-      <div class="logo">MatchUp</div>
+      <router-link to="/Explore"> 
+        <div class="logo">MatchUp</div>
+      </router-link>
       <button class="list-button" @click="goToAddListing">Add new listing +</button>
     </div>
     <ul class="nav-links">
@@ -41,6 +43,17 @@
 <style scoped>
 
 /* nav bar styles */
+.logo {
+
+    text-decoration: double;
+    color: white;
+}
+
+.navbar a {
+    text-decoration: none;
+}
+
+
 .navbar {
     background-color: #744c97; 
     color: white;
@@ -49,6 +62,7 @@
     align-items: center;
     padding: 10px;
     font-family:'Roboto', sans-serif;
+    text-decoration: none;
 }
 
 /* Left Side (Company Name) */
@@ -56,6 +70,7 @@
     font-size: 24px;
     margin-left: 20px;
     font-weight: bold;
+    text-decoration: none;
 }
 
 .nav-left {

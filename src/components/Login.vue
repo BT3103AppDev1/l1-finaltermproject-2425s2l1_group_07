@@ -1,7 +1,7 @@
 <template>
   <div>
-    <navbar></navbar>
     <div class="login-container">
+      <div class="logo">MatchUp</div>
       <div class="login-card" ref="cardRef" @click.stop>
         <h2>Welcome to MatchUp! 🏆</h2>
         <p class="subtitle">Find and join sports matches near you.</p>
@@ -49,7 +49,7 @@ import Navbar from "@/components/Navbar.vue";
         };
 
         const handleClickOutside = (event) => {
-          if (cardRef.value && !cardRef.value.contains(event.target)) {
+          if (router.currentRoute.value.path === "/Login" && cardRef.value && !cardRef.value.contains(event.target)) {
             router.push("/");
           }
         };

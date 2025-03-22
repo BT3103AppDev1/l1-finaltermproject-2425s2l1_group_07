@@ -1,7 +1,7 @@
 <template>
-    <navbar></navbar>
     <div>
         <div class="signup-container">
+          <div class="logo">MatchUp</div>
         <div class="signup-card" ref="cardRef" @click.stop>
             <h2>Welcome to MatchUp! 🏆</h2>
             <p class="subtitle">Create your account and start playing!</p>
