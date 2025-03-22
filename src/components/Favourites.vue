@@ -131,7 +131,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 body {
   font-family: 'Roboto', sans-serif;
   background-color: #e1dfdfc4;
