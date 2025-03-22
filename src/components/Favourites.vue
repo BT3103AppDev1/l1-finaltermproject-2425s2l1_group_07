@@ -1,7 +1,7 @@
 <template>
     <div class="container">
-      <h1 class="favourites-heading">Favourited Listings</h1>
-      <hr class="favourites-hr">
+      <h1>Favourited Listings</h1>
+      <hr>
       <ul class="sports-list">
         <li v-for="listing in listings" :key="listing.id" class="sport-card">
           <button class="unfavourite-btn" @click="unfavourite(listing.id)">Remove Favourites</button>
@@ -27,18 +27,18 @@
   
 <script>
 import { db, getDoc, doc, updateDoc } from '../firebase.js';
-  
+
 export default {
     name: 'Favourites',
 
     data() {
-      return {
-        listings: []
-      };
+        return {
+            listings: []
+        };
     },
 
     async created() {
-      await this.fetchListings();
+        await this.fetchListings();
     },
 
     methods: {
@@ -50,8 +50,9 @@ export default {
             //     throw new Error("No user is currently logged in.");
             // }
 
-            return 'test@email.com' // test functionality
+            return 'test@email.com'; // test functionality
         },
+
         async fetchListings() {
             const userEmail = await this.getCurrentUserEmail();
             const userDocRef = doc(db, 'users', userEmail);
@@ -82,9 +83,9 @@ export default {
             });
 
             const listings = await Promise.all(listingsPromises);
-                this.listings = listings.filter(listing => listing !== null); 
-            }
+            this.listings = listings.filter(listing => listing !== null); 
         },
+
         async unfavourite(id) {
             const userEmail = await this.getCurrentUserEmail();
             const userDocRef = doc(db, 'users', userEmail);
@@ -95,36 +96,39 @@ export default {
                 return;
             }
 
-            const updatedFavourites = userDocSnap.data().favourites.filter(id => id !== listingId);
+            const updatedFavourites = userDocSnap.data().favourites.filter(favId => favId !== id);
             await updateDoc(userDocRef, {
                 favourites: updatedFavourites
             });
 
-            this.listings = this.listings.filter(listing => listing.id !== listingId);
+            this.listings = this.listings.filter(listing => listing.id !== id);
         },
+
         joinChat(sportName) {
             alert(`Joining chat for ${sportName}!`);
         },
+
         toggleDetails(event) {
             const button = event.target;
             const details = button.parentElement.querySelector('.hidden-details');
             
             if (details.style.display === "none" || details.style.display === "") {
-            details.style.display = "block";
-            button.style.display = "none";
-            
-            const lessBtn = document.createElement("button");
-            lessBtn.classList.add("more-btn");
-            lessBtn.innerHTML = "Less ⬆️";
-            lessBtn.onclick = function() {
-                details.style.display = "none";
-                lessBtn.remove();
-                button.style.display = "flex";
-            };
-            details.appendChild(lessBtn);
+                details.style.display = "block";
+                button.style.display = "none";
+
+                const lessBtn = document.createElement("button");
+                lessBtn.classList.add("more-btn");
+                lessBtn.innerHTML = "Less ⬆️";
+                lessBtn.onclick = function() {
+                    details.style.display = "none";
+                    lessBtn.remove();
+                    button.style.display = "flex";
+                };
+                details.appendChild(lessBtn);
             }
         }
-}
+    }
+};
 </script>
   
 <style scoped>
@@ -132,130 +136,119 @@ export default {
     font-family: 'Roboto', sans-serif;
     background-color: #e1dfdfc4;
     margin: 0;
-    padding: 20px;
   }
-  
+
   .container {
-    width: 500px;
-    margin-top: 100px; 
+      margin: 50px 150px;
   }
 
-  .favourites-heading {
-    text-align: center; 
-    margin: 0; 
-    padding: 0;
-    color: #5c2b87;
-    font-size: 28px;
-    font-weight: bold; 
-    width: 100%;
+  h1 {
+      text-align: center;
+      color: #5c2b87;
   }
-
-  .favourites-hr {
-    width: 100%;
-    margin-bottom: 20px; 
-  }
-
   .sports-list {
-    list-style: none;
-    padding: 0;
-    width: 100%;
+      list-style: none;
+      display: flex; /* Enables flexbox */
+      flex-wrap: wrap; /* Allows wrapping to the next line */
+      justify-content: center; /* Centers the items */
+      gap: 50px; /* Adds spacing between items */
+      padding: 0; /* Removes default padding */
   }
 
   .sport-card {
-    background-color: white;
-    border-left: 5px solid #744c97;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-    position: relative;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    word-wrap: break-word;
+      background-color: white;
+      border-left: 5px solid #744c97;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+      position: relative;
+      width: calc(50% - 20px); /* Makes each card take 50% of the container width minus gap */
+      max-width: 500px; /* Prevents it from becoming too wide */
+      box-sizing: border-box; /* Ensures padding doesn’t add extra width */
   }
 
+
   .sport-title {
-    font-size: 22px;
-    font-weight: bold;
-    color: #5c2b87;
-    margin-bottom: 10px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #5c2b87;
   }
 
   .sport-details {
-    font-size: 16px;
-    color: #333;
-    margin-top: 5px;
+      font-size: 14px;
+      color: #333;
+      margin-top: 5px;
   }
 
   .highlight {
-    color: #744c97;
-    font-weight: bold;
+      color: #744c97;
+      font-weight: bold;
   }
 
   .stars {
-    color: #f4c430;
-    font-size: 16px;
+      color: #f4c430;
+      font-size: 16px;
   }
 
   .unfavourite-btn {
-    background-color: #744c97;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    transition: background-color 0.3s;
+      background-color: #744c97;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      transition: background-color 0.3s;
   }
 
   .unfavourite-btn:hover {
-    background-color: #5c2b87;
+      background-color: #5c2b87;
   }
 
   .chat-btn {
-    background-color: #5c2b87;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: 10px;
-    transition: background-color 0.3s;
-    justify-content: center;
+      background-color: #5c2b87;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 10px;
+      transition: background-color 0.3s;
+      justify-content: center;
   }
 
   .chat-btn:hover {
-    background-color: #744c97;
+      background-color: #744c97;
   }
 
   .chat-icon {
-    font-weight: bold;
-    font-size: 16px;
+      font-weight: bold;
+      font-size: 16px;
   }
 
   .more-btn {
-    background: none;
-    border: none;
-    color: #5c2b87;
-    font-size: 14px;
-    cursor: pointer;
-    font-weight: bold;
-    margin-top: 5px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+      background: none;
+      border: none;
+      color: #5c2b87;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
   }
 
   .hidden-details {
-    display: none;
-    margin-top: 15px;
+      display: none;
+      margin-top: 5px;
   }
 </style>
