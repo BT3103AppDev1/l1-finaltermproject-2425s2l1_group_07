@@ -25,7 +25,7 @@
             </ol>
         </h3>
 
-            <router-link to="/SignUp" class="signup-btn">Join in the fun <span class="arrow">→</span></router-link>
+            <router-link to="/signup" class="signup-btn">Join in the fun <span class="arrow">→</span></router-link>
 
           
         </div>

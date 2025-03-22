@@ -1,7 +1,8 @@
 <template>
   <div>
     <div class="login-container">
-      <div class="logo">MatchUp</div>
+
+      <router-link to="/" class="logo">MatchUp</router-link>
       <div class="login-card" ref="cardRef" @click.stop>
         <h2>Welcome to MatchUp! 🏆</h2>
         <p class="subtitle">Find and join sports matches near you.</p>
