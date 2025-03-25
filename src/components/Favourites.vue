@@ -5,7 +5,7 @@
     <ul class="sports-list">
       <li v-for="listing in listings" :key="listing.id" class="sport-card">
         <button class="unfavourite-btn" @click="unfavourite(listing.id)">Remove Favourites</button>
-        <div class="sport-title">{{ listing.sport }}</div>
+        <div class="sport-title">{{ listing.title }}</div>
         <div class="sport-details">
           <p><span class="highlight">Location:</span> {{ listing.location }}</p>
           <p><span class="highlight">Time:</span> {{ listing.time }}</p>
@@ -13,7 +13,7 @@
           <div class="hidden-details">
             <p><span class="highlight">Players Needed:</span> {{ listing.playersNeeded }}</p>
             <p><span class="highlight">Cost:</span> {{ listing.cost }}</p>
-            <p><span class="highlight">Experience Level:</span> <span class="stars">{{ listing.experienceLevel }}</span></p>
+            <p><span class="highlight">Experience Level:</span> <span class="stars">{{ listing.experience }}</span></p>
             <p><span class="highlight">Description / Additional Remarks:</span> {{ listing.description }}</p>
           </div>
           <button class="chat-btn" @click="joinChat(listing.sport)">
@@ -150,7 +150,7 @@ h1 {
     list-style: none;
     display: flex; /* Enables flexbox */
     flex-wrap: wrap; /* Allows wrapping to the next line */
-    justify-content: center; /* Centers the items */
+    justify-content: flex-start; /* Centers the items */
     gap: 50px; /* Adds spacing between items */
     padding: 0; /* Removes default padding */
 }

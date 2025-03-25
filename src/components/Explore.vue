@@ -14,9 +14,11 @@
               <p><span class="highlight">Time:</span> {{ match.time }}</p>
               <p><span class="highlight">Players Needed:</span> {{ match.playersNeeded }}</p>
               <p><span class="highlight">Cost:</span> {{ match.cost }}</p>
-              <p><span class="highlight">Experience Level:</span> {{ '⭐'.repeat(match.experience) }}</p>
+              <p><span class="highlight">Experience Level:</span> {{ match.experience }}</p>
               <p><span class="highlight">Equipment:</span> {{ match.equipment }}</p>
               <p><span class="highlight">Description:</span> {{ match.description }}</p>
+              <button class="fav-btn" @click="addToFavourites(match)">Add to Favourites</button>
+
             </div>
           </li>
         </ul>
@@ -25,38 +27,62 @@
   </template>
   
   <script>
-  import { ref, onValue } from "firebase/database";
-  import { database } from "@/firebase.js"
-  import Navbar from "@/components/Navbar.vue"; // Import the navbar component
-
+  import { collection, getDocs, doc, getDoc, updateDoc } from "firebase/firestore";
+  import { db } from "@/firebase.js"; // `db` should be your initialized Firestore
+  import Navbar from "@/components/Navbar.vue";
+  
   export default {
     components: {
-      Navbar // Register Navbar component
+      Navbar
     },
     data() {
       return {
         matches: []
       };
     },
-    created() {
-      this.fetchListings();
+    async created() {
+      await this.fetchListings();
     },
     methods: {
-      goToAddListing() {
-        this.$router.push('/add-listing'); // ✅ Correct way to navigate
+      async fetchListings() {
+        try {
+          const listingsRef = collection(db, "listings");
+          const snapshot = await getDocs(listingsRef);
+  
+          this.matches = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+        } catch (error) {
+          console.error("Error fetching listings from Firestore:", error);
+        }
       },
-      fetchListings() {
-        const listingsRef = ref(database, "listings");
-        onValue(listingsRef, (snapshot) => {
-          this.matches = [];
-          snapshot.forEach((childSnapshot) => {
-            this.matches.push({ id: childSnapshot.key, ...childSnapshot.val() });
-          });
-        });
+  
+      async addToFavourites(listing) {
+        const userEmail = 'test@email.com'; // Replace with actual auth later
+        const userRef = doc(db, 'users', userEmail);
+        const userSnap = await getDoc(userRef);
+  
+        if (!userSnap.exists()) {
+          console.error("User not found!");
+          return;
+        }
+  
+        let favourites = userSnap.data().favourites || [];
+  
+        if (favourites.includes(listing.id)) {
+          alert("Already in favourites!");
+          return;
+        }
+  
+        favourites.push(listing.id);
+        await updateDoc(userRef, { favourites });
+        alert("Added to favourites!");
       }
     }
   };
   </script>
+  
   
   <style scoped>
   body {
@@ -161,7 +187,7 @@ h1 {
     list-style: none;
     display: flex; /* Enables flexbox */
     flex-wrap: wrap; /* Allows wrapping to the next line */
-    justify-content: center; /* Centers the items */
+    justify-content: flex-start; /* Centers the items */
     gap: 55px; /* Adds spacing between items */
     padding: 0; /* Removes default padding */
 }
@@ -177,6 +203,7 @@ h1 {
     width: calc(50% - 20px); /* Makes each card take 50% of the container width minus gap */
     max-width: 500px; /* Prevents it from becoming too wide */
     box-sizing: border-box; /* Ensures padding doesn’t add extra width */
+    
 }
 
 .fav-btn {
