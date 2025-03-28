@@ -1,96 +1,69 @@
 <template>
-  <div>
-    <navbar></navbar>
-
-    <div class="container">
-      <h1 class="explore-header">Explore Matches</h1>
-      <hr />
-      <div v-if="matches.length === 0" class="no-listings-message">
-        <p>No listings available at the moment!</p>
+    <div>
+      <navbar></navbar>
+      
+  
+      <div class="container">
+        <h1 class="explore-header">Explore Matches</h1>
+        <hr>
+        <ul class="sports-list">
+          <li v-for="match in matches" :key="match.id" class="sport-card">
+            <div class="sport-title">{{ match.title }}</div>
+            <div class="sport-details">
+              <p><span class="highlight">Location:</span> {{ match.location }}</p>
+              <p><span class="highlight">Time:</span> {{ match.time }}</p>
+              <p><span class="highlight">Players Needed:</span> {{ match.playersNeeded }}</p>
+              <p><span class="highlight">Cost:</span> {{ match.cost }}</p>
+              <p><span class="highlight">Experience Level:</span> {{ '⭐'.repeat(match.experience) }}</p>
+              <p><span class="highlight">Equipment:</span> {{ match.equipment }}</p>
+              <p><span class="highlight">Description:</span> {{ match.description }}</p>
+            </div>
+          </li>
+        </ul>
       </div>
-      <ul class="sports-list">
-        <li v-for="match in matches" :key="match.id" class="sport-card">
-          <div class="sport-title">{{ match.title }}</div>
-          <div class="sport-details">
-            <p><span class="highlight">Location:</span> {{ match.location }}</p>
-            <p><span class="highlight">Time:</span> {{ match.time }}</p>
-            <p>
-              <span class="highlight">Players Needed:</span>
-              {{ match.playersNeeded }}
-            </p>
-            <p><span class="highlight">Cost:</span> {{ match.cost }}</p>
-            <p>
-              <span class="highlight">Experience Level:</span>
-              {{ "⭐".repeat(match.experience) }}
-            </p>
-            <p>
-              <span class="highlight">Equipment:</span> {{ match.equipment }}
-            </p>
-            <p>
-              <span class="highlight">Description:</span>
-              {{ match.description }}
-            </p>
-          </div>
-        </li>
-      </ul>
     </div>
-  </div>
-</template>
+  </template>
+  
+  <script>
+  import { ref, onValue } from "firebase/database";
+  import { database } from "@/firebase.js"
+  import Navbar from "@/components/Navbar.vue"; // Import the navbar component
 
-<script>
-import { getFirestore, collection, getDocs } from "firebase/firestore";
-import Navbar from "@/components/Navbar.vue"; // Import the navbar component
-
-export default {
-  components: {
-    Navbar, // Register Navbar component
-  },
-  data() {
-    return {
-      matches: [],
-    };
-  },
-  async created() {
-    await this.fetchListings();
-  },
-  methods: {
-    goToAddListing() {
-      this.$router.push("/add-listing"); // ✅ Correct way to navigate
+  export default {
+    components: {
+      Navbar // Register Navbar component
     },
-    async fetchListings() {
-      const db = getFirestore(); // Initialize Firestore
-      const listingsRef = collection(db, "listings"); // Reference to the 'listings' collection
-
-      try {
-        const querySnapshot = await getDocs(listingsRef); // Fetch data from Firestore
-        const listingsData = [];
-        
-        querySnapshot.forEach((doc) => {
-          listingsData.push({
-            id: doc.id,  // Document ID
-            ...doc.data(),  // Data fields in the listing
+    data() {
+      return {
+        matches: []
+      };
+    },
+    created() {
+      this.fetchListings();
+    },
+    methods: {
+      goToAddListing() {
+        this.$router.push('/add-listing'); // ✅ Correct way to navigate
+      },
+      fetchListings() {
+        const listingsRef = ref(database, "listings");
+        onValue(listingsRef, (snapshot) => {
+          this.matches = [];
+          snapshot.forEach((childSnapshot) => {
+            this.matches.push({ id: childSnapshot.key, ...childSnapshot.val() });
           });
         });
-
-        if (listingsData.length > 0) {
-          this.matches = listingsData; // Populate matches array with fetched data
-        } else {
-          console.log("No listings available.");
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
       }
-    },
-  },
-};
-</script>
-
-<style scoped>
-body {
-  font-family: "Roboto", sans-serif;
-  background-color: #e1dfdfc4;
-  margin: 0;
-  text-align: left;
+    }
+  };
+  </script>
+  
+  <style scoped>
+  body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #e1dfdfc4;
+    margin: 0;
+    text-align: left;
 }
 
 .container {
@@ -181,27 +154,25 @@ h1 {
   display: flex;
 }
 .sports-list {
-  list-style: none;
-  display: flex; /* Enables flexbox */
-  flex-wrap: wrap; /* Allows wrapping to the next line */
-  justify-content: center; /* Centers the items */
-  gap: 55px; /* Adds spacing between items */
-  padding: 0; /* Removes default padding */
+    list-style: none;
+    display: flex; /* Enables flexbox */
+    flex-wrap: wrap; /* Allows wrapping to the next line */
+    justify-content: center; /* Centers the items */
+    gap: 55px; /* Adds spacing between items */
+    padding: 0; /* Removes default padding */
 }
 
 .sport-card {
-  background-color: white;
-  border-left: 5px solid #744c97;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-  position: relative;
-  width: calc(
-    50% - 20px
-  ); /* Makes each card take 50% of the container width minus gap */
-  max-width: 500px; /* Prevents it from becoming too wide */
-  box-sizing: border-box; /* Ensures padding doesn’t add extra width */
+    background-color: white;
+    border-left: 5px solid #744c97;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+    width: calc(50% - 20px); /* Makes each card take 50% of the container width minus gap */
+    max-width: 500px; /* Prevents it from becoming too wide */
+    box-sizing: border-box; /* Ensures padding doesn’t add extra width */
 }
 
 .fav-btn {

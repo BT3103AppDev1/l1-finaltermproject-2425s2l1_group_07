@@ -5,6 +5,7 @@ import SignUp from "@/components/Signup.vue";
 import UserProfile from "@/components/UserProfile.vue";
 import Explore from "@/components/Explore.vue";
 import AddListing from "@/components/AddListing.vue";
+import FavouritesPage from "@/views/FavouritesPage.vue";
 
 const routes = [
   { path: "/", component: LandingPage },
@@ -12,7 +13,8 @@ const routes = [
   { path: "/SignUp", component: SignUp },
   { path: "/Explore", component: Explore },
   { path: '/add-listing', component: AddListing },
-  { path: "/profile", component: UserProfile }
+  { path: "/profile", component: UserProfile },
+  { path: "/favourites", component: FavouritesPage}
 ];
 
 const router = createRouter({

@@ -25,17 +25,39 @@
             <i class="fas fa-user"></i> My Profile
         </router-link>
     </li>
+    <div class="nav-right"></div>
+    <button class="logout-btn" @click="signOut">Log Out</button>
 
     </ul>
   </nav>
   </template>
   
   <script>
+  import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
   export default {
+    data() {
+      return {
+        user: false,
+      }
+    },
+    mounted() {
+        const auth = getAuth();
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            this.user = user;
+          }
+        });
+    },
     methods: {
       goToAddListing() {
         this.$router.push('/add-listing');
-      }
+      },
+      signOut() {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        signOut(auth, user);
+        this.$router.push("/");
+     }
     }
   };
   </script>
@@ -127,6 +149,22 @@
     color: #ddd; /* Lighter color on hover */
 }
 
+.logout-btn {
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: white;
+    color: #744c97;
+}
+
 /* Responsive Design */
 @media (max-width: 600px) {
     .navbar {
@@ -141,7 +179,6 @@
     }
 }
   
-
 
 </style>
   

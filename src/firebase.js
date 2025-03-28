@@ -1,8 +1,7 @@
-// Import Firebase modules
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, getDoc, doc, updateDoc } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getDatabase } from "firebase/database";
-import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey: "AIzaSyD43V2HIX_PDP5P6fxktVPXjhh1Lv994LU",
@@ -13,13 +12,11 @@ const firebaseConfig = {
     messagingSenderId: "132707622798",
     appId: "1:132707622798:web:b30dcd6dd26c639400cedf",
     measurementId: "G-EY15PSDKMD"
-  };
+};
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+export const firebaseApp = initializeApp(firebaseConfig);
+export const db = getFirestore(firebaseApp);
+export const auth = getAuth(firebaseApp);
+export const database = getDatabase(firebaseApp);
 
-// Export Firebase modules
-export const auth = getAuth(app);
-export const database = getDatabase(app);
-export const db = getFirestore(app);
-export default app;
+export { collection, getDoc, onAuthStateChanged, doc, updateDoc };

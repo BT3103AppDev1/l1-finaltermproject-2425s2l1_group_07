@@ -41,7 +41,7 @@
             <label for="description">Description / Additional Remarks</label>
             <textarea v-model="newListing.description" id="description" rows="4" placeholder="e.g Equipment to bring: Racket"></textarea>
 
-            <button type="submit" @click="goBack">Find Player(s)</button>
+            <button type="submit"> Find Player(s)</button>
           
         </form>
     </div>
@@ -49,7 +49,8 @@
 
 <script>
 import { useRouter } from 'vue-router';
-import { getDatabase, ref, push } from 'firebase/database';
+import {ref, push } from 'firebase/database';
+import { database } from '@/firebase.js'
 
 export default {
     setup() {
@@ -75,10 +76,9 @@ export default {
             this.router.push('/Explore');
         },
         addListing() {
-            const database = getDatabase();
             const listingsRef = ref(database, "listings");
             push(listingsRef, this.newListing).then(() => {
-                this.router.push('/');
+                this.router.push('/Explore');
             });
         }
     }
