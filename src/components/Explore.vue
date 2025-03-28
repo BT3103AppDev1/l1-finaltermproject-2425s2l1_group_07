@@ -18,7 +18,6 @@
 
       <!-- Filter Dropdowns -->
       <div class="filter-container">
-        <!-- Dynamic Sports Type Filter -->
         <select v-model="selectedSport" class="filter-dropdown">
           <option value="">All Sports</option>
           <option v-for="sport in sportsTypes" :key="sport" :value="sport">
@@ -26,7 +25,6 @@
           </option>
         </select>
 
-        <!-- Dynamic Location Filter -->
         <select v-model="selectedLocation" class="filter-dropdown">
           <option value="">All Locations</option>
           <option v-for="location in locations" :key="location" :value="location">
@@ -34,7 +32,6 @@
           </option>
         </select>
 
-        <!-- Experience Level Filter -->
         <select v-model="selectedExperience" class="filter-dropdown">
           <option value="">All Experience Levels</option>
           <option value="⭐"> ⭐ </option>
@@ -55,7 +52,7 @@
             <p><span class="highlight">Time:</span> {{ match.time }}</p>
             <p><span class="highlight">Players Needed:</span> {{ match.playersNeeded }}</p>
             <p><span class="highlight">Cost:</span> {{ match.cost }}</p>
-            <p><span class="highlight">Experience Level:</span> {{ "⭐".repeat(match.experience) }}</p>
+            <p><span class="highlight">Experience Level:</span> {{ match.experience }}</p>
             <p><span class="highlight">Description:</span> {{ match.description }}</p>
           </div>
         </li>
@@ -78,8 +75,8 @@ export default {
       selectedSport: "",
       selectedLocation: "",
       selectedExperience: "",
-      sportsTypes: [], // Store unique sports types
-      locations: [], // Store unique locations
+      sportsTypes: [], 
+      locations: [], 
     };
   },
   created() {
@@ -113,13 +110,14 @@ export default {
           if (!data.sportType) {
             data.sportType = data.title
           }
+
           return {
             id: doc.id,
             ...data,
           };
         });
 
-        // Extract unique sports types and locations
+        // Extract sports types and locations
         this.sportsTypes = [...new Set(this.matches.map((match) => match.sportType))];
         this.locations = [...new Set(this.matches.map((match) => match.location))];
       } catch (error) {
@@ -175,7 +173,7 @@ h1 {
   border-color: #3c9c65;
 }
 
-/* Button styling */
+
 .filter-container button {
   padding: 7.5px 15px;
   font-size: 16px;
@@ -203,7 +201,7 @@ h1 {
 
 .search-bar {
   width: 100%;
-  padding: 10px 40px; /* Space for icon */
+  padding: 10px 40px; 
   border: 1px solid #ccc;
   border-radius: 10px;
   font-size: 16px;
