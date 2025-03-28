@@ -6,6 +6,7 @@
       <h1 class="explore-header">Explore Matches</h1>
       <hr />
 
+      <!-- Search Bar -->
       <div class="search-container">
         <input
           v-model="searchQuery"
@@ -14,32 +15,48 @@
           placeholder="Search for matches..."
         />
       </div>
+
+      <!-- Filter Dropdowns -->
+      <div class="filter-container">
+        <!-- Dynamic Sports Type Filter -->
+        <select v-model="selectedSport" class="filter-dropdown">
+          <option value="">All Sports</option>
+          <option v-for="sport in sportsTypes" :key="sport" :value="sport">
+            {{ sport }}
+          </option>
+        </select>
+
+        <!-- Dynamic Location Filter -->
+        <select v-model="selectedLocation" class="filter-dropdown">
+          <option value="">All Locations</option>
+          <option v-for="location in locations" :key="location" :value="location">
+            {{ location }}
+          </option>
+        </select>
+
+        <!-- Experience Level Filter -->
+        <select v-model="selectedExperience" class="filter-dropdown">
+          <option value="">All Experience Levels</option>
+          <option value="⭐"> ⭐ </option>
+          <option value="⭐⭐"> ⭐⭐ </option>
+          <option value="⭐⭐⭐"> ⭐⭐⭐ </option>
+          <option value="⭐⭐⭐⭐"> ⭐⭐⭐⭐ </option>
+          <option value="⭐⭐⭐⭐⭐"> ⭐⭐⭐⭐⭐ </option>
+        </select>
+      </div>
+
+      <!-- Listings -->
       <ul class="sports-list">
         <li v-for="match in filteredMatches" :key="match.id" class="sport-card">
           <div class="sport-title">{{ match.title }}</div>
           <div class="sport-details">
+            <p><span class="highlight">Sport Type:</span> {{ match.sportType }}</p>
             <p><span class="highlight">Location:</span> {{ match.location }}</p>
             <p><span class="highlight">Time:</span> {{ match.time }}</p>
-            <p>
-              <span class="highlight">Players Needed:</span>
-              {{ match.playersNeeded }}
-            </p>
+            <p><span class="highlight">Players Needed:</span> {{ match.playersNeeded }}</p>
             <p><span class="highlight">Cost:</span> {{ match.cost }}</p>
-            <p>
-              <span class="highlight">Experience Level:</span>
-              {{ "⭐".repeat(match.experience) }}
-            </p>
-            <p>
-              <span class="highlight">Equipment:</span> {{ match.equipment }}
-            </p>
-            <p>
-              <span class="highlight">Description:</span>
-              {{ match.description }}
-            </p>
-            <button class="fav-btn" @click="addToFavourites(match)">
-              Add to Favourites
-            </button>
-            <button class="chat-btn" @click="joinChat(match)">Join Chat</button>
+            <p><span class="highlight">Experience Level:</span> {{ "⭐".repeat(match.experience) }}</p>
+            <p><span class="highlight">Description:</span> {{ match.description }}</p>
           </div>
         </li>
       </ul>
@@ -48,44 +65,39 @@
 </template>
 
 <script>
-import {
-  collection,
-  getDocs,
-  doc,
-  getDoc,
-  updateDoc,
-  setDoc,
-} from "firebase/firestore";
-import { db } from "@/firebase.js"; // `db` should be your initialized Firestore
-import { getAuth } from "firebase/auth";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/firebase.js";
 import Navbar from "@/components/Navbar.vue";
 
 export default {
-  components: {
-    Navbar, // Register Navbar component
-  },
+  components: { Navbar },
   data() {
     return {
       matches: [],
       searchQuery: "",
+      selectedSport: "",
+      selectedLocation: "",
+      selectedExperience: "",
+      sportsTypes: [], // Store unique sports types
+      locations: [], // Store unique locations
     };
   },
   created() {
-    this.fetchListings();  // Call the fetchListings method
+    this.fetchListings();
   },
   computed: {
     filteredMatches() {
-      // Filter matches based on the search query
       return this.matches.filter((match) => {
-        return (
+        const matchesSearch =
           match.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          match.location
-            .toLowerCase()
-            .includes(this.searchQuery.toLowerCase()) ||
-          match.description
-            .toLowerCase()
-            .includes(this.searchQuery.toLowerCase())
-        );
+          match.location.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          match.description.toLowerCase().includes(this.searchQuery.toLowerCase());
+
+        const matchesSport = this.selectedSport ? match.sportType === this.selectedSport : true;
+        const matchesLocation = this.selectedLocation ? match.location === this.selectedLocation : true;
+        const matchesExperience = this.selectedExperience ? match.experience == this.selectedExperience : true;
+
+        return matchesSearch && matchesSport && matchesLocation && matchesExperience;
       });
     },
   },
@@ -94,79 +106,25 @@ export default {
       try {
         const listingsRef = collection(db, "listings");
         const snapshot = await getDocs(listingsRef);
-        this.matches = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        console.log("Fetched matches: ", this.matches); // Add this to check if data is fetched
-      } catch (error) {
-        console.error("Error fetching listings from Firestore:", error);
-      }
-    },
 
-    async addToFavourites(listing) {
-      const userEmail = "test@email.com"; // Replace with actual auth later
-      const userRef = doc(db, "users", userEmail);
-      const userSnap = await getDoc(userRef);
+        this.matches = snapshot.docs.map((doc) => {
+          let data = doc.data();
 
-      if (!userSnap.exists()) {
-        console.error("User not found!");
-        return;
-      }
-
-      let favourites = userSnap.data().favourites || [];
-
-      if (favourites.includes(listing.id)) {
-        alert("Already in favourites!");
-        return;
-      }
-
-      favourites.push(listing.id);
-      await updateDoc(userRef, { favourites });
-      alert("Added to favourites!");
-    },
-
-    async joinChat(match) {
-      const auth = getAuth();
-      const user = auth.currentUser;
-
-      if (!user || !user.email) {
-        alert("User not authenticated");
-        return;
-      }
-
-      const userEmail = user.email;
-      const userRef = doc(db, "users", userEmail);
-      let userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          joinedChats: [],
-          favourites: [],
-          name: user.displayName || "",
+          if (!data.sportType) {
+            data.sportType = data.title
+          }
+          return {
+            id: doc.id,
+            ...data,
+          };
         });
 
-        userSnap = await getDoc(userRef);
+        // Extract unique sports types and locations
+        this.sportsTypes = [...new Set(this.matches.map((match) => match.sportType))];
+        this.locations = [...new Set(this.matches.map((match) => match.location))];
+      } catch (error) {
+        console.error("Error fetching listings:", error);
       }
-
-      const userData = userSnap.data();
-      let joinedChats = userData?.joinedChats || [];
-
-      if (joinedChats.includes(match.id)) {
-        alert("Already joined this chat!");
-        return;
-      }
-
-      joinedChats.push({
-        id: match.id,
-        title: match.title,
-        time: match.time,
-      });
-
-      await setDoc(userRef, { joinedChats }, { merge: true });
-
-      alert(`Joined ${match.title} chat!`);
-      this.$router.push("/chats");
     },
   },
 };
@@ -373,5 +331,60 @@ h1 {
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
+}
+
+.filter-container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.filter-dropdown {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.sports-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 55px;
+  padding: 0;
+}
+
+.sport-card {
+  background-color: white;
+  border-left: 5px solid #744c97;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  width: calc(50% - 20px);
+  max-width: 500px;
+  box-sizing: border-box;
+}
+
+.fav-btn {
+  background-color: #5c2b87;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  transition: background-color 0.3s;
+}
+
+.fav-btn:hover {
+  background-color: #744c97;
 }
 </style>
