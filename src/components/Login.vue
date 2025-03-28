@@ -40,8 +40,17 @@ import Navbar from "@/components/Navbar.vue";
 
         const login = async () => {
           try {
-            await signInWithEmailAndPassword(auth, email.value, password.value);
-            alert("Login successful!");
+            const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
+            const user = userCredential.user;
+
+            // Check if email is verified
+            if (!user.emailVerified) {
+              await signOut(auth); // Immediately log out unverified users
+              errorMessage.value = "Please verify your email before logging in.";
+              return;
+            }
+
+            alert("Login successful! Redirecting...");
             router.push("/Explore");
           } catch (error) {
             errorMessage.value = "Invalid email or password. Please try again.";
