@@ -18,6 +18,8 @@
               <p><span class="highlight">Equipment:</span> {{ match.equipment }}</p>
               <p><span class="highlight">Description:</span> {{ match.description }}</p>
               <button class="fav-btn" @click="addToFavourites(match)">Add to Favourites</button>
+              <button class="chat-btn" @click="joinChat(match)">Join Chat</button>
+
 
             </div>
           </li>
@@ -27,8 +29,9 @@
   </template>
   
   <script>
-  import { collection, getDocs, doc, getDoc, updateDoc } from "firebase/firestore";
+  import { collection, getDocs, doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
   import { db } from "@/firebase.js"; // `db` should be your initialized Firestore
+  import { getAuth } from "firebase/auth";
   import Navbar from "@/components/Navbar.vue";
   
   export default {
@@ -78,9 +81,54 @@
         favourites.push(listing.id);
         await updateDoc(userRef, { favourites });
         alert("Added to favourites!");
-      }
+      },
+
+      async joinChat(match) {
+    const auth = getAuth();
+     const user = auth.currentUser;
+
+  if (!user || !user.email) {
+    alert("User not authenticated");
+    return;
+  }
+
+  const userEmail = user.email;
+  const userRef = doc(db, 'users', userEmail);
+  let userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    await setDoc(userRef, {
+      joinedChats: [],
+      favourites: [],
+      name: user.displayName || '',
+    });
+
+    userSnap = await getDoc(userRef);
+  }
+
+  const userData = userSnap.data();
+  let joinedChats = userData?.joinedChats || [];
+
+  if (joinedChats.includes(match.id)) {
+    alert("Already joined this chat!");
+    return;
+  }
+
+  joinedChats.push({
+  id: match.id,
+  title: match.title,
+  time: match.time
+});
+
+await setDoc(userRef, { joinedChats }, { merge: true });
+
+
+  alert(`Joined ${match.title} chat!`);
+  this.$router.push('/chats');
+}
+
     }
-  };
+}
   </script>
   
   
