@@ -91,31 +91,48 @@
       });
     },
     methods: {
-      async loadUserRooms() {
+        async loadUserRooms() {
         const userRef = doc(db, 'users', this.currentUser.email);
         const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          const joinedChatRefs = userSnap.data().joinedChats || [];
-          if (joinedChatRefs[0]?.title) {
-            this.joinedRooms = joinedChatRefs;
-          } else {
-            const roomFetches = joinedChatRefs.map(async (roomId) => {
-              const listingRef = doc(db, 'listings', roomId);
-              const listingSnap = await getDoc(listingRef);
-              if (listingSnap.exists()) {
-                return { id: roomId, ...listingSnap.data() };
-              }
-              return null;
-            });
-  
-            const resolvedRooms = await Promise.all(roomFetches);
-            this.joinedRooms = resolvedRooms.filter(room => room !== null);
-          }
-  
-          this.selectedRoom = this.joinedRooms[0]?.id || '';
-          this.joinRoom();
+
+        if (!userSnap.exists()) {
+            console.warn("User document not found.");
+            return;
         }
-      },
+
+        const joinedChatRefs = userSnap.data().joinedChats || [];
+        console.log("joinedChatRefs:", joinedChatRefs);
+
+        // Case 1: Already has full data like { id, title, time }
+        if (joinedChatRefs.length > 0 && joinedChatRefs[0]?.title) {
+            this.joinedRooms = joinedChatRefs;
+        } 
+        // Case 2: Just a list of IDs
+        else {
+            const roomFetches = joinedChatRefs.map(async (roomIdOrObj) => {
+            const roomId = roomIdOrObj.id || roomIdOrObj; // supports both formats
+            const listingRef = doc(db, 'listings', roomId);
+            const listingSnap = await getDoc(listingRef);
+
+            if (listingSnap.exists()) {
+                return {
+                id: listingSnap.id,
+                ...listingSnap.data()
+                };
+            }
+
+            return null;
+            });
+
+    const resolvedRooms = await Promise.all(roomFetches);
+    this.joinedRooms = resolvedRooms.filter(room => room !== null);
+  }
+
+  this.selectedRoom = this.joinedRooms[0]?.id || '';
+  this.joinRoom();
+},
+
+    
       joinRoom() {
         if (!this.selectedRoom) return;
         const q = query(collection(db, 'messages'), where('room', '==', this.selectedRoom));

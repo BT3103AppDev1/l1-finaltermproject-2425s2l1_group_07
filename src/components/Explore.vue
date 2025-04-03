@@ -1,134 +1,211 @@
 <template>
-  <div>
-    <navbar></navbar>
-
-    <div class="container">
-      <h1 class="explore-header">Explore Matches</h1>
-      <hr />
-
-      <!-- Search Bar -->
-      <div class="search-container">
-        <input
-          v-model="searchQuery"
-          type="text"
-          class="search-bar"
-          placeholder="Search for matches..."
-        />
+    <div>
+      <navbar></navbar>
+  
+      <div class="container">
+        <h1 class="explore-header">Explore Matches</h1>
+        <hr />
+  
+        <!-- Search Bar -->
+        <div class="search-container">
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="search-bar"
+            placeholder="Search for matches..."
+          />
+        </div>
+  
+        <!-- Filter Dropdowns -->
+        <div class="filter-container">
+          <select v-model="selectedSport" class="filter-dropdown">
+            <option value="">All Sports</option>
+            <option v-for="sport in sportsTypes" :key="sport" :value="sport">
+              {{ sport }}
+            </option>
+          </select>
+  
+          <select v-model="selectedLocation" class="filter-dropdown">
+            <option value="">All Locations</option>
+            <option v-for="location in locations" :key="location" :value="location">
+              {{ location }}
+            </option>
+          </select>
+  
+          <select v-model="selectedExperience" class="filter-dropdown">
+            <option value="">All Experience Levels</option>
+            <option value="⭐"> ⭐ </option>
+            <option value="⭐⭐"> ⭐⭐ </option>
+            <option value="⭐⭐⭐"> ⭐⭐⭐ </option>
+            <option value="⭐⭐⭐⭐"> ⭐⭐⭐⭐ </option>
+            <option value="⭐⭐⭐⭐⭐"> ⭐⭐⭐⭐⭐ </option>
+          </select>
+        </div>
+  
+        <!-- Listings -->
+        <ul class="sports-list">
+          <li v-for="match in filteredMatches" :key="match.id" class="sport-card">
+            <div class="sport-title">{{ match.title }}</div>
+            <div class="sport-details">
+              <p><span class="highlight">Sport Type:</span> {{ match.sportType }}</p>
+              <p><span class="highlight">Location:</span> {{ match.location }}</p>
+              <p><span class="highlight">Time:</span> {{ match.time }}</p>
+              <p><span class="highlight">Players Needed:</span> {{ match.playersNeeded }}</p>
+              <p><span class="highlight">Cost:</span> {{ match.cost }}</p>
+              <p><span class="highlight">Experience Level:</span> {{ match.experience }}</p>
+              <p><span class="highlight">Description:</span> {{ match.description }}</p>
+              <button class="fav-btn" @click="addToFavourites(match)">Add to Favourites</button>
+              <button class="chat-btn" @click="joinChat(match)">Join Chat</button>
+            </div>
+          </li>
+        </ul>
       </div>
-
-      <!-- Filter Dropdowns -->
-      <div class="filter-container">
-        <select v-model="selectedSport" class="filter-dropdown">
-          <option value="">All Sports</option>
-          <option v-for="sport in sportsTypes" :key="sport" :value="sport">
-            {{ sport }}
-          </option>
-        </select>
-
-        <select v-model="selectedLocation" class="filter-dropdown">
-          <option value="">All Locations</option>
-          <option v-for="location in locations" :key="location" :value="location">
-            {{ location }}
-          </option>
-        </select>
-
-        <select v-model="selectedExperience" class="filter-dropdown">
-          <option value="">All Experience Levels</option>
-          <option value="⭐"> ⭐ </option>
-          <option value="⭐⭐"> ⭐⭐ </option>
-          <option value="⭐⭐⭐"> ⭐⭐⭐ </option>
-          <option value="⭐⭐⭐⭐"> ⭐⭐⭐⭐ </option>
-          <option value="⭐⭐⭐⭐⭐"> ⭐⭐⭐⭐⭐ </option>
-        </select>
-      </div>
-
-      <!-- Listings -->
-      <ul class="sports-list">
-        <li v-for="match in filteredMatches" :key="match.id" class="sport-card">
-          <div class="sport-title">{{ match.title }}</div>
-          <div class="sport-details">
-            <p><span class="highlight">Sport Type:</span> {{ match.sportType }}</p>
-            <p><span class="highlight">Location:</span> {{ match.location }}</p>
-            <p><span class="highlight">Time:</span> {{ match.time }}</p>
-            <p><span class="highlight">Players Needed:</span> {{ match.playersNeeded }}</p>
-            <p><span class="highlight">Cost:</span> {{ match.cost }}</p>
-            <p><span class="highlight">Experience Level:</span> {{ match.experience }}</p>
-            <p><span class="highlight">Description:</span> {{ match.description }}</p>
-          </div>
-        </li>
-      </ul>
     </div>
-  </div>
-</template>
-
-<script>
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/firebase.js";
-import Navbar from "@/components/Navbar.vue";
-
-export default {
-  components: { Navbar },
-  data() {
-    return {
-      matches: [],
-      searchQuery: "",
-      selectedSport: "",
-      selectedLocation: "",
-      selectedExperience: "",
-      sportsTypes: [], 
-      locations: [], 
-    };
-  },
-  created() {
-    this.fetchListings();
-  },
-  computed: {
-    filteredMatches() {
-      return this.matches.filter((match) => {
-        const matchesSearch =
-          match.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          match.location.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          match.description.toLowerCase().includes(this.searchQuery.toLowerCase());
-
-        const matchesSport = this.selectedSport ? match.sportType === this.selectedSport : true;
-        const matchesLocation = this.selectedLocation ? match.location === this.selectedLocation : true;
-        const matchesExperience = this.selectedExperience ? match.experience == this.selectedExperience : true;
-
-        return matchesSearch && matchesSport && matchesLocation && matchesExperience;
-      });
+  </template>
+  
+  <script>
+  import {
+    collection,
+    getDocs,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc
+  } from "firebase/firestore";
+  
+  import { getAuth } from "firebase/auth";
+  import { db } from "@/firebase.js";
+  import Navbar from "@/components/Navbar.vue";
+  
+  
+  export default {
+    components: { Navbar },
+    data() {
+      return {
+        matches: [],
+        searchQuery: "",
+        selectedSport: "",
+        selectedLocation: "",
+        selectedExperience: "",
+        sportsTypes: [], 
+        locations: [], 
+      };
     },
-  },
-  methods: {
-    async fetchListings() {
-      try {
-        const listingsRef = collection(db, "listings");
-        const snapshot = await getDocs(listingsRef);
-
-        this.matches = snapshot.docs.map((doc) => {
-          let data = doc.data();
-
-          if (!data.sportType) {
-            data.sportType = data.title
-          }
-
-          return {
-            id: doc.id,
-            ...data,
-          };
+    created() {
+      this.fetchListings();
+    },
+    computed: {
+      filteredMatches() {
+        return this.matches.filter((match) => {
+          const matchesSearch =
+            match.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+            match.location.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+            match.description.toLowerCase().includes(this.searchQuery.toLowerCase());
+  
+          const matchesSport = this.selectedSport ? match.sportType === this.selectedSport : true;
+          const matchesLocation = this.selectedLocation ? match.location === this.selectedLocation : true;
+          const matchesExperience = this.selectedExperience ? match.experience == this.selectedExperience : true;
+  
+          return matchesSearch && matchesSport && matchesLocation && matchesExperience;
         });
-
-        // Extract sports types and locations
-        this.sportsTypes = [...new Set(this.matches.map((match) => match.sportType))];
-        this.locations = [...new Set(this.matches.map((match) => match.location))];
-      } catch (error) {
-        console.error("Error fetching listings:", error);
-      }
+      },
     },
-  },
-};
-</script>
-
-<style scoped>
+    methods: {
+      async fetchListings() {
+        try {
+          const listingsRef = collection(db, "listings");
+          const snapshot = await getDocs(listingsRef);
+  
+          this.matches = snapshot.docs.map((doc) => {
+            let data = doc.data();
+  
+            if (!data.sportType) {
+              data.sportType = data.title;
+            }
+  
+            return {
+              id: doc.id,
+              ...data,
+            };
+          });
+  
+          this.sportsTypes = [...new Set(this.matches.map((match) => match.sportType))];
+          this.locations = [...new Set(this.matches.map((match) => match.location))];
+        } catch (error) {
+          console.error("Error fetching listings:", error);
+        }
+      },
+  
+      async addToFavourites(listing) {
+        const userEmail = await this.getCurrentUserEmail?.(); // Adjust if getCurrentUserEmail is not defined
+        const userRef = doc(db, 'users', userEmail);
+        const userSnap = await getDoc(userRef);
+  
+        if (!userSnap.exists()) {
+          console.error("User not found!");
+          return;
+        }
+  
+        let favourites = userSnap.data().favourites || [];
+  
+        if (favourites.includes(listing.id)) {
+          alert("Already in favourites!");
+          return;
+        }
+  
+        favourites.push(listing.id);
+        await updateDoc(userRef, { favourites });
+        alert("Added to favourites!");
+      },
+  
+      async joinChat(match) {
+        const auth = getAuth();
+        const user = auth.currentUser;
+  
+        if (!user || !user.email) {
+          alert("User not authenticated");
+          return;
+        }
+  
+        const userEmail = user.email;
+        const userRef = doc(db, 'users', userEmail);
+        let userSnap = await getDoc(userRef);
+  
+        if (!userSnap.exists()) {
+          await setDoc(userRef, {
+            joinedChats: [],
+            favourites: [],
+            name: user.displayName || '',
+          });
+  
+          userSnap = await getDoc(userRef);
+        }
+  
+        const userData = userSnap.data();
+        let joinedChats = userData?.joinedChats || [];
+  
+        if (joinedChats.some(chat => chat.id === match.id)) {
+          alert("Already joined this chat!");
+          return;
+        }
+  
+        joinedChats.push({
+          id: match.id,
+          title: match.title,
+          time: match.time
+        });
+  
+        await setDoc(userRef, { joinedChats }, { merge: true });
+  
+        alert(`Joined ${match.title} chat!`);
+        this.$router.push('/chats');
+      }
+    }
+  };
+    </script>
+  
+  
+  <style scoped>
 body {
   font-family: "Roboto", sans-serif;
   background-color: #e1dfdfc4;
@@ -386,3 +463,4 @@ h1 {
   background-color: #744c97;
 }
 </style>
+    
