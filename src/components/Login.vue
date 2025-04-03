@@ -12,8 +12,12 @@
           <button type="submit" class="login-btn">Login</button>
         </form>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+      
         <div class="links">
           <router-link to="/SignUp">Create an Account</router-link>
+        </div>
+        <div class="links">
+          <a href="#" @click.prevent="resetPassword">Forgot Password?</a>
         </div>
       </div>
     </div>
@@ -24,7 +28,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth } from '@/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import Navbar from "@/components/Navbar.vue";
 
   export default {
@@ -58,6 +62,20 @@ import Navbar from "@/components/Navbar.vue";
           }
         };
 
+        const resetPassword = async () => {
+          if (!email.value) {
+            errorMessage.value = "Please enter your email first.";
+            return;
+          }
+          try {
+            await sendPasswordResetEmail(auth, email.value);
+            alert(`Password reset email sent to ${email.value}. Check your inbox.`);
+          } catch (error) {
+            errorMessage.value = "Error sending password reset email. Try again.";
+            console.error("Password Reset Error:", error.message);
+          }
+        };
+
         const handleClickOutside = (event) => {
           if (router.currentRoute.value.path === "/Login" && cardRef.value && !cardRef.value.contains(event.target)) {
             router.push("/");
@@ -72,7 +90,7 @@ import Navbar from "@/components/Navbar.vue";
           document.removeEventListener('click', handleClickOutside);
         });
 
-    return { email, password, errorMessage, cardRef, login };
+    return { email, password, errorMessage, cardRef, login, resetPassword };
     },
   };
 </script>
