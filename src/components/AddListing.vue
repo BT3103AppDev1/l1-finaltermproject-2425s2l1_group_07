@@ -51,6 +51,7 @@
 import { useRouter } from 'vue-router';
 import {ref, push } from 'firebase/database';
 import { database } from '@/firebase.js'
+import { getAuth } from "firebase/auth";
 
 export default {
     setup() {
@@ -76,10 +77,28 @@ export default {
             this.router.push('/Explore');
         },
         addListing() {
+            const auth = getAuth();
+            const user = auth.currentUser;
+
+            if (!user) {
+                alert("You must be logged in to create a listing.");
+                return;
+            }
+
             const listingsRef = ref(database, "listings");
-            push(listingsRef, this.newListing).then(() => {
+
+            const listingWithOwner = {
+                ...this.newListing,
+                ownerId: user.email, // now tracks who created it
+            };
+
+            push(listingsRef, listingWithOwner).then(() => {
                 this.router.push('/Explore');
             });
+            // const listingsRef = ref(database, "listings");
+            // push(listingsRef, this.newListing).then(() => {
+            //     this.router.push('/Explore');
+            // });
         }
     }
 };

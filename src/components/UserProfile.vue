@@ -1,176 +1,259 @@
 <template>
-    <div>
-        <navbar></navbar>
-  
-      <div class="container">
-        <div v-if="!editMode">
-          <img :src="user.profilePicture" alt="Profile Picture" id="profile-picture" />
+  <div>
+    <navbar></navbar>
+
+    <div class="container">
+      <hr />
+
+      <!-- Profile Header -->
+      <div class="profile-header">
+        <img
+          id="profile-picture"
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRaOk8qE9ecVIYpm7FH-llQ7EWtS59dttOzza3xloSHG7nTKFW5cWU0KFwvm-1gCgRXKGk&usqp=CAU"
+          alt="Profile Picture"
+        />
+
+        <div class="nickname-section">
+          <div v-if="!editMode">
+            <h2>{{ user.nickname || "No nickname yet" }}</h2>
+          </div>
+          <div v-else>
+            <label>Nickname</label>
+            <input
+              v-model="editedUser.nickname"
+              placeholder="Enter a nickname"
+              style="width: 100%; padding: 8px; border-radius: 5px; margin-bottom: 10px;"
+            />
+          </div>
         </div>
-        <div v-else>
-          <input
-            v-model="editedUser.profilePicture"
-            placeholder="Profile picture URL"
-            style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px;"
-          />
-          <img :src="editedUser.profilePicture" alt="Preview" id="profile-picture" />
-        </div>
-  
-        <h2>@{{ user.username }}</h2>
-        <hr />
-  
-        <h3>About Me</h3>
-        <div class="description" v-if="!editMode">
-          <p>{{ user.about }}</p>
-        </div>
-        <div class="description" v-else>
-          <textarea v-model="editedUser.about" rows="4" style="width: 100%;"></textarea>
-        </div>
-  
-        <h3>Sports</h3>
-        <div class="my-sports" v-if="!editMode">
-          <ul>
-            <li v-for="sport in user.sports" :key="sport">{{ sport }}</li>
-          </ul>
-        </div>
-        <div class="my-sports" v-else>
-          <input
-            v-model="editedUser.sportsInput"
-            placeholder="Enter sports (comma-separated)"
-            style="width: 100%; padding: 8px; border-radius: 5px;"
-          />
-        </div>
-  
-        <button type="edit" v-if="!editMode" @click="startEditing">Edit Profile</button>
-        <div v-else>
-          <button type="edit" @click="saveChanges">Save</button>
-          <button type="edit" @click="cancelEditing">Cancel</button>
-        </div>
-  
-        <hr />
-        <div class="my-listing"><h2>My Listings</h2></div>
-  
-        <ul class="sports-list">
-          <li class="sport-card" v-for="(listing, index) in listings" :key="index">
-            <div class="sport-title">{{ listing.title }}</div>
-            <div class="sport-details">
-              <p><span class="highlight">Location:</span> {{ listing.location }}</p>
-              <p><span class="highlight">Time:</span> {{ listing.time }}</p>
-              <div class="extra-details" v-show="listing.showDetails">
-                <p><span class="highlight">Players Needed:</span> {{ listing.playersNeeded }}</p>
-                <p><span class="highlight">Cost:</span> {{ listing.cost }}</p>
-                <p><span class="highlight">Experience Level:</span> {{ listing.experience }}</p>
-              </div>
-              <button class="toggle-btn" @click="toggleDetails(index)">
-                {{ listing.showDetails ? 'Less ⬆️' : 'More ⬇️' }}
-              </button>
-            </div>
-            <button type="edit">Edit</button>
-            <button type="edit">Delete</button>
-          </li>
+      </div>
+
+
+      <!-- About Me -->
+      <h3>About Me</h3>
+      <div class="description" v-if="!editMode">
+        <p>{{ user.about }}</p>
+      </div>
+      <div class="description" v-else>
+        <label>About Me</label>
+        <textarea v-model="editedUser.about" rows="4" style="width: 100%;"></textarea>
+      </div>
+
+      <!-- Sports -->
+      <h3>Sports</h3>
+      <div class="my-sports" v-if="!editMode">
+        <ul>
+          <li v-for="sport in user.sports" :key="sport">{{ sport }}</li>
         </ul>
       </div>
-    </div>
-  </template>
-  
-  <script>
-  import Navbar from "@/components/Navbar.vue";
+      <div class="my-sports" v-else>
+        <label>Sports (comma-separated)</label>
+        <input
+          v-model="editedUser.sportsInput"
+          placeholder="e.g. Tennis, Football"
+          style="width: 100%; padding: 8px; border-radius: 5px;"
+        />
+        <p><strong>Preview:</strong> {{ editedUser.sportsInput.split(',').map(s => s.trim()).join(', ') }}</p>
+      </div>
 
-  export default {
-    components: {
-      Navbar // Register Navbar component
-    },
-    name: "UserProfile",
-    data() {
-      return {
-        editMode: false,
-        userId: "janedoe", // Replace with auth user UID in real app
-        user: {
-          username: "janedoe",
-          profilePicture: "",
-          about: "",
-          sports: [],
-        },
-        editedUser: {
-          profilePicture: "",
-          about: "",
-          sportsInput: "",
-        },
-        listings: [
-          {
-            title: "Basketball 3v3",
-            location: "NUS Sports Hall",
-            time: "25/02/2025 6:00 PM",
-            playersNeeded: 6,
-            cost: "Free",
-            experience: "⭐⭐⭐",
-            showDetails: false,
-          },
-          {
-            title: "Soccer Match",
-            location: "UTown Field",
-            time: "25/02/2025 7:30 PM",
-            playersNeeded: 12,
-            cost: "Free",
-            experience: "⭐⭐⭐⭐⭐",
-            showDetails: false,
-          },
-        ],
-      };
-    },
-    async created() {
-      await this.fetchUserProfile();
-    },
-    methods: {
-      async fetchUserProfile() {
-        try {
-          const docRef = doc(db, "users", this.userId);
-          const docSnap = await getDoc(docRef);
-  
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            this.user.profilePicture = data.profilePicture || "";
-            this.user.about = data.about || "";
-            this.user.sports = data.sports || [];
-          }
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
+      <!-- Buttons -->
+      <button type="edit" v-if="!editMode" @click="startEditing">Edit Profile</button>
+      <div v-else>
+        <button type="edit" @click="saveChanges">Save</button>
+        <button type="edit" @click="cancelEditing">Cancel</button>
+      </div>
+
+      <hr />
+      <div class="my-listing"><h2>My Listings</h2></div>
+
+      <!-- Listings You Created -->
+      <h3>You Created</h3>
+      <ul class="sports-list">
+        <li class="sport-card" v-for="(listing, index) in createdListings" :key="listing.id">
+          <div class="sport-title">{{ listing.title }}</div>
+          <div class="sport-details">
+            <p><span class="highlight">Location:</span> {{ listing.location }}</p>
+            <p><span class="highlight">Time:</span> {{ listing.time }}</p>
+            <div class="extra-details" v-show="listing.showDetails">
+              <p><span class="highlight">Players Needed:</span> {{ listing.playersNeeded }}</p>
+              <p><span class="highlight">Cost:</span> {{ listing.cost }}</p>
+              <p><span class="highlight">Experience:</span> {{ listing.experience }}</p>
+              <p v-if="listing.description"><span class="highlight">Description:</span> {{ listing.description }}</p>
+            </div>
+            <button class="toggle-btn" @click="listing.showDetails = !listing.showDetails">
+              {{ listing.showDetails ? 'Less ⬆️' : 'More ⬇️' }}
+            </button>
+          </div>
+        </li>
+      </ul>
+
+      <!-- Listings You Joined -->
+      <h3>You Joined</h3>
+      <ul class="sports-list">
+        <li class="sport-card" v-for="(listing, index) in joinedListings" :key="index">
+          <div class="sport-title">{{ listing.title }}</div>
+          <div class="sport-details">
+            <p><span class="highlight">Location:</span> {{ listing.location }}</p>
+            <p><span class="highlight">Time:</span> {{ listing.time }}</p>
+            <div class="extra-details" v-show="listing.showDetails">
+              <p><span class="highlight">Players Needed:</span> {{ listing.playersNeeded }}</p>
+              <p><span class="highlight">Cost:</span> {{ listing.cost }}</p>
+              <p><span class="highlight">Experience:</span> {{ listing.experience }}</p>
+              <p v-if="listing.description"><span class="highlight">Description:</span> {{ listing.description }}</p>
+            </div>
+            <button class="toggle-btn" @click="toggleDetails(index, 'joined')">
+              {{ listing.showDetails ? 'Less ⬆️' : 'More ⬇️' }}
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+<script>
+import Navbar from "@/components/Navbar.vue";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db, database } from "@/firebase";
+import { ref as dbRef, get } from "firebase/database";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+
+export default {
+  components: { Navbar },
+  name: "UserProfile",
+  data() {
+    return {
+      editMode: false,
+      userId: null,
+      user: {
+        nickname: "",
+        about: "",
+        sports: [],
+      },
+      editedUser: {
+        about: "",
+        sportsInput: "",
+      },
+      joinedListings: [],
+      createdListings: [],
+    };
+  },
+  async created() {
+    const auth = getAuth();
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        this.userId = user.email;
+        await this.fetchUserProfile();
+        await this.fetchJoinedListings();
+        await this.fetchCreatedListings();
+      }
+    });
+  },
+
+  methods: {
+    async fetchUserProfile() {
+      try {
+        const docRef = doc(db, "users", this.userId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          this.user.about = data.about || "";
+          this.user.sports = data.sports || [];
+          this.user.nickname = data.nickname || "";
         }
-      },
-      startEditing() {
-        this.editMode = true;
-        this.editedUser.about = this.user.about;
-        this.editedUser.profilePicture = this.user.profilePicture;
-        this.editedUser.sportsInput = this.user.sports.join(", ");
-      },
-      async saveChanges() {
-        this.user.about = this.editedUser.about;
-        this.user.profilePicture = this.editedUser.profilePicture;
-        this.user.sports = this.editedUser.sportsInput
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s);
-  
-        try {
-          await setDoc(doc(db, "users", this.userId), {
-            username: this.user.username,
-            profilePicture: this.user.profilePicture,
-            about: this.user.about,
-            sports: this.user.sports,
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    },
+    async fetchJoinedListings() {
+      try {
+        const docRef = doc(db, "users", this.userId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          const joined = userData.joinedChats || [];
+
+          const listingPromises = joined.map(async (listing) => {
+            const id = typeof listing === "string" ? listing : listing.id;
+            const listingSnap = await get(dbRef(database, `listings/${id}`));
+            if (listingSnap.exists()) {
+              return { ...listingSnap.val(), showDetails: false };
+            }
+            return null;
           });
-          this.editMode = false;
-        } catch (error) {
-          console.error("Error saving profile:", error);
+
+          const results = await Promise.all(listingPromises);
+          this.joinedListings = results.filter(Boolean);
         }
-      },
-      cancelEditing() {
-        this.editMode = false;
-      },
-      toggleDetails(index) {
-        this.listings[index].showDetails = !this.listings[index].showDetails;
-      },
+      } catch (error) {
+        console.error("Error fetching joined listings:", error);
+      }
     },
-  };
-  </script>
+    async fetchCreatedListings() {
+      try {
+        const snapshot = await get(dbRef(database, "listings"));
+        const allListings = snapshot.val();
+
+        if (allListings) {
+          const created = Object.entries(allListings)
+            .filter(([key, listing]) => listing.ownerId === this.userId)
+            .map(([key, listing]) => ({
+              ...listing,
+              id: key,
+              showDetails: false,
+            }));
+
+          this.createdListings = created;
+        }
+      } catch (error) {
+        console.error("Error fetching created listings:", error);
+      }
+    },
+    startEditing() {
+      this.editMode = true;
+      this.editedUser.nickname = this.user.nickname;
+      this.editedUser.about = this.user.about;
+      this.editedUser.sportsInput = Array.isArray(this.user.sports)
+        ? this.user.sports.join(", ")
+        : "";
+    },
+
+    async saveChanges() {
+      if (!confirm("Are you sure you want to save changes to your profile?")) return;
+      this.user.nickname = this.editedUser.nickname;
+      this.user.about = this.editedUser.about;
+      const input = this.editedUser.sportsInput || "";
+      this.user.sports = input
+        .split(",")
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+
+      try {
+        await setDoc(doc(db, "users", this.userId), {
+          ...this.user,
+        });
+        this.editMode = false;
+        alert("✅ Profile updated successfully!");
+      } catch (error) {
+        console.error("Error saving profile:", error);
+        alert("Something went wrong while saving.");
+      }
+    },
+    cancelEditing() {
+      this.editMode = false;
+    },
+    toggleDetails(index, type) {
+      if (type === "joined") {
+        this.joinedListings[index].showDetails = !this.joinedListings[index].showDetails;
+      } else {
+        this.createdListings[index].showDetails = !this.createdListings[index].showDetails;
+      }
+    },
+  },
+};
+</script>
   
   <style scoped>
   @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
@@ -372,5 +455,21 @@
       width: 90%;
     }
   }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    #profile-picture {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid #744c97;
+    }
+
   </style>
   
