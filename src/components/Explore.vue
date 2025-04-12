@@ -17,7 +17,7 @@
       </div>
 
       <!-- Filter Dropdowns -->
-      <div class="filter-container">
+      <div class="filter-container" v-if="upcomingMatches.length > 0">
         <select v-model="selectedSport" class="filter-dropdown">
           <option value="">All Sports</option>
           <option v-for="sport in sportsTypes" :key="sport" :value="sport">
@@ -38,15 +38,22 @@
 
         <select v-model="selectedExperience" class="filter-dropdown">
           <option value="">All Experience Levels</option>
-          <option value="⭐">⭐</option>
-          <option value="⭐⭐">⭐⭐</option>
-          <option value="⭐⭐⭐">⭐⭐⭐</option>
-          <option value="⭐⭐⭐⭐">⭐⭐⭐⭐</option>
-          <option value="⭐⭐⭐⭐⭐">⭐⭐⭐⭐⭐</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
         </select>
       </div>
 
       <!-- Grouped Listings -->
+
+      <div class="toggle-container">
+        <label>
+          <input type="checkbox" v-model="hideExpired" />
+          Hide expired matches
+        </label>
+      </div>
 
       <h2 class="section-header">Upcoming Matches</h2>
       <ul class="sports-list">
@@ -79,8 +86,8 @@
         </li>
       </ul>
 
-      <h2 class="section-header faded">Past Matches</h2>
-      <ul class="sports-list">
+      <h2 class="section-header faded" v-if="!hideExpired">Past Matches</h2>
+      <ul class="sports-list" v-if="!hideExpired">
         <li
           v-for="match in pastMatches"
           :key="match.id"
@@ -152,6 +159,7 @@ export default {
       selectedExperience: "",
       sportsTypes: [],
       locations: [],
+      hideExpired: false,
     };
   },
   created() {
@@ -165,7 +173,7 @@ export default {
     },
     pastMatches() {
       return this.matches
-        .filter((match) => match.expired && this.matchPassesFilters(match))
+        .filter((match) => match.expired)
         .sort((a, b) => new Date(a.time) - new Date(b.time));
     },
   },
@@ -213,12 +221,11 @@ export default {
           };
         });
 
-        this.sportsTypes = [
-          ...new Set(this.matches.map((match) => match.sportType)),
-        ];
-        this.locations = [
-          ...new Set(this.matches.map((match) => match.location)),
-        ];
+        const upcoming = this.matches.filter((m) => !m.expired);
+
+        this.sportsTypes = [...new Set(upcoming.map((match) => match.sportType))];
+        this.locations = [...new Set(upcoming.map((match) => match.location))];
+
       } catch (error) {
         console.error("Error fetching listings:", error);
       }
@@ -578,5 +585,18 @@ h1 {
 }
 .section-header.faded {
   opacity: 0.6;
+}
+/* for hide expired */
+.toggle-container {
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #5c2b87;
+}
+.toggle-container input {
+  margin-right: 8px;
+  transform: scale(1.2);
+  accent-color: #5c2b87;
 }
 </style>

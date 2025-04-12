@@ -90,7 +90,7 @@ export default {
                 ownerId: user.email,
             };
             try {
-                await addDoc(collection(db, "listings"), listingWithOwner);
+                await addDoc(collection(db, "listings"), listingData);
                 this.router.push('/Explore');
             } catch (error) {
                 console.error("Error adding listing: ", error);
