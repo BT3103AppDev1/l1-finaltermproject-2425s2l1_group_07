@@ -46,15 +46,11 @@
         </select>
       </div>
 
-      <!-- Listings -->
+      <!-- Grouped Listings -->
+
+      <h2 class="section-header">Upcoming Matches</h2>
       <ul class="sports-list">
-        <li
-          v-for="match in filteredMatches"
-          :key="match.id"
-          class="sport-card"
-          :class="{ 'expired-card': match.expired }"
-        >
-          <div class="expired-overlay" v-if="match.expired">Expired</div>
+        <li v-for="match in upcomingMatches" :key="match.id" class="sport-card">
           <div class="sport-title">{{ match.title }}</div>
           <div class="sport-details">
             <p>
@@ -75,21 +71,42 @@
               <span class="highlight">Description:</span>
               {{ match.description }}
             </p>
-            <button
-              class="fav-btn"
-              :disabled="match.expired"
-              @click="!match.expired && addToFavourites(match)"
-            >
+            <button class="fav-btn" @click="addToFavourites(match)">
               Add to Favourites
             </button>
+            <button class="chat-btn" @click="joinChat(match)">Join Chat</button>
+          </div>
+        </li>
+      </ul>
 
-            <button
-              class="chat-btn"
-              :disabled="match.expired"
-              @click="!match.expired && joinChat(match)"
-            >
-              Join Chat
-            </button>
+      <h2 class="section-header faded">Past Matches</h2>
+      <ul class="sports-list">
+        <li
+          v-for="match in pastMatches"
+          :key="match.id"
+          class="sport-card expired-card"
+        >
+          <div class="expired-overlay">Expired</div>
+          <div class="sport-title">{{ match.title }}</div>
+          <div class="sport-details">
+            <p>
+              <span class="highlight">Sport Type:</span> {{ match.sportType }}
+            </p>
+            <p><span class="highlight">Location:</span> {{ match.location }}</p>
+            <p><span class="highlight">Time:</span> {{ match.time }}</p>
+            <p>
+              <span class="highlight">Players Needed:</span>
+              {{ match.playersNeeded }}
+            </p>
+            <p><span class="highlight">Cost:</span> {{ match.cost }}</p>
+            <p>
+              <span class="highlight">Experience Level:</span>
+              {{ match.experience }}
+            </p>
+            <p>
+              <span class="highlight">Description:</span>
+              {{ match.description }}
+            </p>
           </div>
         </li>
       </ul>
@@ -112,11 +129,16 @@ import { db } from "@/firebase.js";
 import Navbar from "@/components/Navbar.vue";
 
 function parseDate(dateStr) {
-  // Expecting format: "DD/MM/YYYY HH:mm"
+  if (typeof dateStr !== "string") return new Date(); // fallback
+
+  // Case 1: ISO format → parse directly
+  if (dateStr.includes("T")) {
+    return new Date(dateStr);
+  }
+  // Case 2: DD/MM/YYYY HH:mm
   const [datePart, timePart] = dateStr.split(" ");
   const [day, month, year] = datePart.split("/").map(Number);
   const [hour, minute] = timePart.split(":").map(Number);
-
   return new Date(year, month - 1, day, hour, minute);
 }
 export default {
@@ -136,34 +158,40 @@ export default {
     this.fetchListings();
   },
   computed: {
-    filteredMatches() {
-      return this.matches.filter((match) => {
-        const matchesSearch =
-          match.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          match.location
-            .toLowerCase()
-            .includes(this.searchQuery.toLowerCase()) ||
-          match.description
-            .toLowerCase()
-            .includes(this.searchQuery.toLowerCase());
-
-        const matchesSport = this.selectedSport
-          ? match.sportType === this.selectedSport
-          : true;
-        const matchesLocation = this.selectedLocation
-          ? match.location === this.selectedLocation
-          : true;
-        const matchesExperience = this.selectedExperience
-          ? match.experience == this.selectedExperience
-          : true;
-
-        return (
-          matchesSearch && matchesSport && matchesLocation && matchesExperience
-        );
-      });
+    upcomingMatches() {
+      return this.matches
+        .filter((match) => !match.expired && this.matchPassesFilters(match))
+        .sort((a, b) => new Date(a.time) - new Date(b.time));
+    },
+    pastMatches() {
+      return this.matches
+        .filter((match) => match.expired && this.matchPassesFilters(match))
+        .sort((a, b) => new Date(a.time) - new Date(b.time));
     },
   },
   methods: {
+    matchPassesFilters(match) {
+      const matchesSearch =
+        match.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        match.location.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        match.description
+          .toLowerCase()
+          .includes(this.searchQuery.toLowerCase());
+
+      const matchesSport = this.selectedSport
+        ? match.sportType === this.selectedSport
+        : true;
+      const matchesLocation = this.selectedLocation
+        ? match.location === this.selectedLocation
+        : true;
+      const matchesExperience = this.selectedExperience
+        ? match.experience == this.selectedExperience
+        : true;
+
+      return (
+        matchesSearch && matchesSport && matchesLocation && matchesExperience
+      );
+    },
     async fetchListings() {
       try {
         const listingsRef = collection(db, "listings");
@@ -539,5 +567,16 @@ h1 {
   padding: 4px 10px;
   border-radius: 6px;
   z-index: 1;
+}
+/* for group listings */
+.section-header {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #5c2b87;
+  margin-top: 40px;
+}
+.section-header.faded {
+  opacity: 0.6;
 }
 </style>

@@ -49,8 +49,8 @@
 
 <script>
 import { useRouter } from 'vue-router';
-import {ref, push } from 'firebase/database';
-import { database } from '@/firebase.js'
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "@/firebase.js";
 import { getAuth } from "firebase/auth";
 
 export default {
@@ -76,7 +76,7 @@ export default {
         goBack() {
             this.router.push('/Explore');
         },
-        addListing() {
+        async addListing() {
             const auth = getAuth();
             const user = auth.currentUser;
 
@@ -85,20 +85,17 @@ export default {
                 return;
             }
 
-            const listingsRef = ref(database, "listings");
-
-            const listingWithOwner = {
+            const listingData = {
                 ...this.newListing,
-                ownerId: user.email, // now tracks who created it
+                ownerId: user.email,
             };
-
-            push(listingsRef, listingWithOwner).then(() => {
+            try {
+                await addDoc(collection(db, "listings"), listingWithOwner);
                 this.router.push('/Explore');
-            });
-            // const listingsRef = ref(database, "listings");
-            // push(listingsRef, this.newListing).then(() => {
-            //     this.router.push('/Explore');
-            // });
+            } catch (error) {
+                console.error("Error adding listing: ", error);
+                alert("Failed to add listing. Please try again.");
+            }
         }
     }
 };
@@ -250,3 +247,4 @@ button[type="submit"]:hover {
     }
 }
 </style>
+

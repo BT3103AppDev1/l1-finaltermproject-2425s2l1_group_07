@@ -7,6 +7,7 @@ import Explore from "@/components/Explore.vue";
 import AddListing from "@/components/AddListing.vue";
 import FavouritesPage from "@/views/FavouritesPage.vue";
 import ChatsPage from "@/components/ChatsPage.vue"; // ✅ uncommented and correct
+import migrate from "@/views/migrate.vue"; // ✅ uncommented and correct
 
 const routes = [
   { path: "/", component: LandingPage },
@@ -16,8 +17,8 @@ const routes = [
   { path: "/add-listing", component: AddListing },
   { path: "/profile", component: UserProfile },
   { path: "/favourites", component: FavouritesPage },
-  { path: "/chats", component: ChatsPage }
-
+  { path: "/chats", component: ChatsPage },
+  { path: '/migrate', component: migrate}
 ];
 
 const router = createRouter({
