@@ -184,11 +184,13 @@ export default {
           this.user.about = data.about || "";
           this.user.sports = data.sports || [];
           this.user.nickname = data.nickname || "";
+          this.user.photoURL = data.photoURL || ""; // ✅ Add this
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
       }
     },
+
     async fetchJoinedListings() {
       try {
         const userDoc = await getDoc(doc(db, "users", this.userId));
@@ -197,23 +199,21 @@ export default {
           const joinedListings = [];
 
           for (const entry of joinedChats) {
-            // Ensure entry is an object with a valid 'id'
-            if (!entry || typeof entry.id !== "string") {
-              console.warn("Invalid joinedChats entry:", entry);
-              continue;
-            }
+            const listingId = typeof entry === "string" ? entry : entry.id;
 
-            const listingRef = doc(db, "listings", entry.id);
+            if (!listingId) continue;
+
+            const listingRef = doc(db, "listings", listingId);
             const listingSnap = await getDoc(listingRef);
 
             if (listingSnap.exists()) {
               joinedListings.push({
-                id: entry.id,
+                id: listingId,
                 ...listingSnap.data(),
                 showDetails: false
               });
             } else {
-              console.warn(`Listing not found for ID: ${entry.id}`);
+              console.warn(`❗ Listing not found for ID: ${listingId}`);
             }
           }
 
@@ -223,21 +223,85 @@ export default {
         console.error("Error fetching joined listings:", error);
       }
     },
+
     async fetchCreatedListings() {
       try {
         const listingsRef = collection(db, "listings");
         const q = query(listingsRef, where("ownerId", "==", this.userId));
         const querySnapshot = await getDocs(q);
+        const joinedIds = this.joinedListings.map(l => l.id);
 
-        this.createdListings = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          showDetails: false
-        }));
+        this.createdListings = querySnapshot.docs.map((doc) => {
+          const id = doc.id; // ✅ define it here
+          return {
+            id,
+            ...doc.data(),
+            showDetails: false,
+            joined: joinedIds.includes(id) // ✅ use it here
+          };
+        });
       } catch (error) {
         console.error("Error fetching created listings:", error);
       }
     },
+
+    async joinListing(listingId) {
+      try {
+        if (!this.userId) {
+          alert("You must be logged in to join.");
+          return;
+        }
+
+        // Get the listing data first
+        const listingRef = doc(db, "listings", listingId);
+        const listingSnap = await getDoc(listingRef);
+
+        if (!listingSnap.exists()) {
+          alert("This listing no longer exists.");
+          return;
+        }
+
+        const listingData = listingSnap.data();
+
+        // 🚫 Prevent joining your own listing
+        if (listingData.ownerId === this.userId) {
+          alert("You can't join your own listing.");
+          return;
+        }
+
+        // Proceed with join logic
+        const userRef = doc(db, "users", this.userId);
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.data() || {};
+        const joinedChats = userData.joinedChats || [];
+
+        const alreadyJoined = joinedChats.some(
+          (entry) => (typeof entry === "object" ? entry.id : entry) === listingId
+        );
+
+        if (alreadyJoined) {
+          alert("You already joined this listing.");
+          return;
+        }
+
+        joinedChats.push({
+          id: listingId,
+          title: listingData.title,
+          time: listingData.time
+        });
+        await setDoc(userRef, {
+          ...userData,
+          joinedChats
+        });
+
+        alert("✅ Successfully joined listing!");
+        await this.fetchJoinedListings();
+      } catch (error) {
+        console.error("❌ Failed to join listing:", error);
+        alert("Something went wrong. Please try again.");
+      }
+    },
+
     startEditing() {
       this.editMode = true;
       this.editedUser.nickname = this.user.nickname;
@@ -249,37 +313,41 @@ export default {
 
     async saveChanges() {
       if (!confirm("Are you sure you want to save changes to your profile?")) return;
+
       this.user.nickname = this.editedUser.nickname;
       this.user.about = this.editedUser.about;
+
       const input = this.editedUser.sportsInput || "";
       this.user.sports = input
         .split(",")
         .map(s => s.trim())
         .filter(s => s.length > 0);
 
-
       try {
-        await setDoc(doc(db, "users", this.userId), {
-          ...this.user,
-        });
+        const userRef = doc(db, "users", this.userId);
+        const userSnap = await getDoc(userRef);
+
+        const existingData = userSnap.exists() ? userSnap.data() : {};
+
+        const updatedUserData = {
+          ...existingData, // ✅ Preserve fields like joinedChats, etc.
+          nickname: this.user.nickname,
+          about: this.user.about,
+          sports: this.user.sports,
+          photoURL: this.user.photoURL || this.defaultPhoto // ✅ Ensure photo is saved
+        };
+
+        await setDoc(userRef, updatedUserData);
+
         this.editMode = false;
         alert("✅ Profile updated successfully!");
       } catch (error) {
-        console.error("Error saving profile:", error);
+        console.error("❌ Error saving profile:", error);
         alert("Something went wrong while saving.");
       }
     },
-    cancelEditing() {
-      this.editMode = false;
-    },
-    toggleDetails(index, type) {
-      if (type === "joined") {
-        this.joinedListings[index].showDetails = !this.joinedListings[index].showDetails;
-      } else {
-        this.createdListings[index].showDetails = !this.createdListings[index].showDetails;
-      }
-    },
-    handlePhotoUpload(event) {
+
+    async handlePhotoUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
@@ -290,11 +358,35 @@ export default {
       }
 
       const reader = new FileReader();
-      reader.onload = (e) => {
-        this.user.photoURL = e.target.result;
+      reader.onload = async (e) => {
+        const base64Image = e.target.result;
+
+        // Update local state
+        this.user.photoURL = base64Image;
+
+        // ✅ Save to Firestore
+        try {
+          const userRef = doc(db, "users", this.userId);
+
+          // First get current user data
+          const userSnap = await getDoc(userRef);
+          const userData = userSnap.exists() ? userSnap.data() : {};
+
+          // Update with photo
+          await setDoc(userRef, {
+            ...userData,
+            photoURL: base64Image
+          });
+
+          alert("✅ Profile photo updated and saved!");
+        } catch (error) {
+          console.error("❌ Error saving profile photo:", error);
+          alert("Failed to save profile photo.");
+        }
       };
+
       reader.readAsDataURL(file);
-    },
+    }
   },
 };
 </script>
