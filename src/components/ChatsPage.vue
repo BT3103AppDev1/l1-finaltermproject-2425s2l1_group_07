@@ -31,9 +31,9 @@
               Current Chat Room:
               <span id="current-room">{{ selectedRoomObj.title }} - {{ selectedRoomObj.time }}</span>
             </h3>
+            <button class="leave-chat-btn" @click="leaveChat">Leave Chat</button>
           </div>
   
-          <!-- Chat body & input now in its own container -->
           <div class="chat-main">
             <div class="chat-box">
               <div
@@ -63,7 +63,16 @@
   
   <script>
   import { db } from '@/firebase';
-  import { collection, addDoc, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore';
+  import {
+    collection,
+    addDoc,
+    query,
+    where,
+    onSnapshot,
+    doc,
+    getDoc,
+    updateDoc
+  } from 'firebase/firestore';
   import { getAuth, onAuthStateChanged } from 'firebase/auth';
   import Navbar from '@/components/Navbar.vue';
   
@@ -91,48 +100,44 @@
       });
     },
     methods: {
-        async loadUserRooms() {
+      async loadUserRooms() {
         const userRef = doc(db, 'users', this.currentUser.email);
         const userSnap = await getDoc(userRef);
-
+  
         if (!userSnap.exists()) {
-            console.warn("User document not found.");
-            return;
+          console.warn("User document not found.");
+          return;
         }
-
+  
         const joinedChatRefs = userSnap.data().joinedChats || [];
-        console.log("joinedChatRefs:", joinedChatRefs);
-
-        // Case 1: Already has full data like { id, title, time }
+  
+        // Case 1: Full room data present
         if (joinedChatRefs.length > 0 && joinedChatRefs[0]?.title) {
-            this.joinedRooms = joinedChatRefs;
-        } 
-        // Case 2: Just a list of IDs
-        else {
-            const roomFetches = joinedChatRefs.map(async (roomIdOrObj) => {
-            const roomId = roomIdOrObj.id || roomIdOrObj; // supports both formats
+          this.joinedRooms = joinedChatRefs;
+        } else {
+          // Case 2: Just a list of IDs
+          const roomFetches = joinedChatRefs.map(async (roomIdOrObj) => {
+            const roomId = roomIdOrObj.id || roomIdOrObj;
             const listingRef = doc(db, 'listings', roomId);
             const listingSnap = await getDoc(listingRef);
-
+  
             if (listingSnap.exists()) {
-                return {
+              return {
                 id: listingSnap.id,
                 ...listingSnap.data()
-                };
+              };
             }
-
             return null;
-            });
-
-    const resolvedRooms = await Promise.all(roomFetches);
-    this.joinedRooms = resolvedRooms.filter(room => room !== null);
-  }
-
-  this.selectedRoom = this.joinedRooms[0]?.id || '';
-  this.joinRoom();
-},
-
-    
+          });
+  
+          const resolvedRooms = await Promise.all(roomFetches);
+          this.joinedRooms = resolvedRooms.filter(room => room !== null);
+        }
+  
+        this.selectedRoom = this.joinedRooms[0]?.id || '';
+        this.joinRoom();
+      },
+  
       joinRoom() {
         if (!this.selectedRoom) return;
         const q = query(collection(db, 'messages'), where('room', '==', this.selectedRoom));
@@ -140,6 +145,7 @@
           this.messages[this.selectedRoom] = snapshot.docs.map(doc => doc.data());
         });
       },
+  
       async sendMessage() {
         if (!this.newMessage.trim()) return;
         await addDoc(collection(db, 'messages'), {
@@ -150,6 +156,40 @@
           createdAt: new Date()
         });
         this.newMessage = '';
+      },
+  
+      async leaveChat() {
+        if (!this.selectedRoom) return;
+  
+        alert("Leaving chat...");
+  
+        const userRef = doc(db, 'users', this.currentUser.email);
+        const userSnap = await getDoc(userRef);
+  
+        if (!userSnap.exists()) {
+          console.warn("User document not found.");
+          return;
+        }
+  
+        let updatedChats = userSnap.data().joinedChats || [];
+  
+        updatedChats = updatedChats.filter(room => {
+          if (typeof room === 'string') {
+            return room !== this.selectedRoom;
+          } else {
+            return room.id !== this.selectedRoom;
+          }
+        });
+  
+        await updateDoc(userRef, {
+          joinedChats: updatedChats
+        });
+  
+        this.joinedRooms = this.joinedRooms.filter(room => room.id !== this.selectedRoom);
+        this.selectedRoom = this.joinedRooms[0]?.id || '';
+        if (this.selectedRoom) {
+          this.joinRoom();
+        }
       }
     },
     computed: {
@@ -175,7 +215,8 @@
     flex-direction: column;
     width: 95%;
     max-width: 1000px;
-    margin: 40px auto;
+    margin: 0 auto;
+    height: calc(100vh - 40px);
     background: white;
     border-radius: 10px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -185,6 +226,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    height : 220%
   }
   
   .chat-box {
@@ -197,9 +239,9 @@
   }
   
   .chat-input {
+    background: #5c2b87;
     display: flex;
     padding: 12px 24px;
-    background: #5c2b87;
     gap: 8px;
     align-items: center;
     border-top: 2px solid #744c97;
@@ -211,7 +253,7 @@
     padding: 8px;
     border-radius: 5px;
     outline: none;
-    font-size: 14px;
+    font-size: 18px;
   }
   
   .chat-input button {
@@ -227,6 +269,22 @@
   
   .chat-input button:hover {
     background: #5c2b87;
+  }
+  
+  .leave-chat-btn {
+    margin-top: 8px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  
+  .leave-chat-btn:hover {
+    background: #c0392b;
   }
   
   header {
@@ -259,7 +317,7 @@
   .dropdown {
     width: 100%;
     padding: 6px;
-    font-size: 14px;
+    font-size: 18px;
     border-radius: 5px;
     border: none;
     background: white;
@@ -281,7 +339,7 @@
     max-width: 90%;
     padding: 8px;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 18px;
   }
   
   .user-msg {
