@@ -216,7 +216,8 @@
     width: 95%;
     max-width: 1000px;
     margin: 0 auto;
-    height: calc(100vh - 40px);
+    /*height: calc(100vh - 0px);*/
+    padding-bottom: 10px;
     background: white;
     border-radius: 10px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -226,7 +227,8 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    height : 220%
+    height : 70%;
+    padding-bottom: 20px;
   }
   
   .chat-box {
