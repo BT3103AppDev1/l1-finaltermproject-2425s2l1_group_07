@@ -365,6 +365,11 @@ export default {
     list-style: none;
     padding: 0;
   }
+
+  textarea {
+    resize: vertical;
+}
+
   
   .sport-card {
     background-color: #e1dfdfc4;
