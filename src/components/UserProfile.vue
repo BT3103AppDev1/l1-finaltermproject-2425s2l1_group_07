@@ -113,9 +113,17 @@
 
 <script>
 import Navbar from "@/components/Navbar.vue";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db, database } from "@/firebase";
-import { ref as dbRef, get } from "firebase/database";
+import { db } from "@/firebase";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  getDocs,
+  query,
+  where
+} from "firebase/firestore";
+
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 
@@ -168,23 +176,33 @@ export default {
     },
     async fetchJoinedListings() {
       try {
-        const docRef = doc(db, "users", this.userId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const userData = docSnap.data();
-          const joined = userData.joinedChats || [];
+        const userDoc = await getDoc(doc(db, "users", this.userId));
+        if (userDoc.exists()) {
+          const joinedChats = userDoc.data().joinedChats || [];
+          const joinedListings = [];
 
-          const listingPromises = joined.map(async (listing) => {
-            const id = typeof listing === "string" ? listing : listing.id;
-            const listingSnap = await get(dbRef(database, `listings/${id}`));
-            if (listingSnap.exists()) {
-              return { ...listingSnap.val(), showDetails: false };
+          for (const entry of joinedChats) {
+            // Ensure entry is an object with a valid 'id'
+            if (!entry || typeof entry.id !== "string") {
+              console.warn("Invalid joinedChats entry:", entry);
+              continue;
             }
-            return null;
-          });
 
-          const results = await Promise.all(listingPromises);
-          this.joinedListings = results.filter(Boolean);
+            const listingRef = doc(db, "listings", entry.id);
+            const listingSnap = await getDoc(listingRef);
+
+            if (listingSnap.exists()) {
+              joinedListings.push({
+                id: entry.id,
+                ...listingSnap.data(),
+                showDetails: false
+              });
+            } else {
+              console.warn(`Listing not found for ID: ${entry.id}`);
+            }
+          }
+
+          this.joinedListings = joinedListings;
         }
       } catch (error) {
         console.error("Error fetching joined listings:", error);
@@ -192,20 +210,15 @@ export default {
     },
     async fetchCreatedListings() {
       try {
-        const snapshot = await get(dbRef(database, "listings"));
-        const allListings = snapshot.val();
+        const listingsRef = collection(db, "listings");
+        const q = query(listingsRef, where("ownerId", "==", this.userId));
+        const querySnapshot = await getDocs(q);
 
-        if (allListings) {
-          const created = Object.entries(allListings)
-            .filter(([key, listing]) => listing.ownerId === this.userId)
-            .map(([key, listing]) => ({
-              ...listing,
-              id: key,
-              showDetails: false,
-            }));
-
-          this.createdListings = created;
-        }
+        this.createdListings = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          showDetails: false
+        }));
       } catch (error) {
         console.error("Error fetching created listings:", error);
       }
