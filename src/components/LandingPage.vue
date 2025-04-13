@@ -5,7 +5,8 @@
           <div class="logo">MatchUp</div>
           <nav>
             <ul>
-              <li><a href="#">Contact</a></li>
+              <li><a href="mailto:matchupfeedback@gmail.com">Contact</a></li>
+
               <li><router-link to="/login" class="login-btn">Log In</router-link></li>
 
             </ul>
