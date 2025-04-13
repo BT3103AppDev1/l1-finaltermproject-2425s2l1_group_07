@@ -2,3 +2,20 @@
     font-family: 'Roboto', sans-serif;
   }
   
+
+@media (max-width: 768px) {
+    body {
+      padding: 0.5rem;
+    }
+  
+    .container {
+      flex-direction: column;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    html {
+      font-size: 14px;
+    }
+  }
+  
