@@ -9,6 +9,7 @@
       </router-link>
       <button class="list-button" @click="goToAddListing">Add new listing +</button>
     </div>
+    <div class="nav-right">
     <ul class="nav-links">
     <li>
         <router-link to="/favourites">
@@ -25,10 +26,10 @@
             <i class="fas fa-user"></i> My Profile
         </router-link>
     </li>
-    <div class="nav-right"></div>
     <button class="logout-btn" @click="signOut">Log Out</button>
 
     </ul>
+    </div>
   </nav>
   </template>
   
@@ -147,6 +148,13 @@
 
 .navbar .nav-links a:hover {
     color: #ddd; /* Lighter color on hover */
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 30px; /* space between nav-links and logout button */
+  margin-top: 15px;
 }
 
 .logout-btn {

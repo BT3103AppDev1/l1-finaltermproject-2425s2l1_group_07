@@ -230,6 +230,16 @@ export default {
         console.error("Error fetching listings:", error);
       }
     },
+    async getCurrentUserEmail() {
+          // const user = auth.currentUser;
+          // if (user) {
+          //     return user.email; 
+          // } else {
+          //     throw new Error("No user is currently logged in.");
+          // }
+
+          return 'test@email.com'; // test functionality
+      },
 
     async addToFavourites(listing) {
       const userEmail = await this.getCurrentUserEmail?.(); // Adjust if getCurrentUserEmail is not defined
@@ -300,11 +310,23 @@ export default {
 </script>
 
 <style scoped>
-body {
-  font-family: "Roboto", sans-serif;
-  background-color: #e1dfdfc4;
+
+html, body {
+  background-color: lightblue !important;
+  height: 100%;
   margin: 0;
-  text-align: left;
+  padding: 0;
+}
+
+
+.container {
+    background-image: url('@/assets/landing.jpg');
+    background-size: cover;
+    background-position: center;
+    font-family: 'Roboto', sans-serif;
+    color: #333333;
+    line-height: 1.6;
+    margin: 50px 190px;
 }
 
 .container {
@@ -393,29 +415,25 @@ h1 {
   justify-content: left;
   display: flex;
 }
+
 .sports-list {
   list-style: none;
-  display: flex; /* Enables flexbox */
-  flex-wrap: wrap; /* Allows wrapping to the next line */
-  justify-content: center; /* Centers the items */
-  gap: 55px; /* Adds spacing between items */
-  padding: 0; /* Removes default padding */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 30px;
+  padding: 0;
 }
 
 .sport-card {
+  flex: 0 1 calc(50% - 30px); /* 2 cards per row minus gap */
+  box-sizing: border-box;
   background-color: white;
-  border-left: 5px solid #744c97;
   padding: 15px;
-  margin-bottom: 15px;
   border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-  position: relative;
-  width: calc(
-    50% - 20px
-  ); /* Makes each card take 50% of the container width minus gap */
-  max-width: 500px; /* Prevents it from becoming too wide */
-  box-sizing: border-box; /* Ensures padding doesn’t add extra width */
 }
+
 
 .fav-btn {
   background-color: #5c2b87;
