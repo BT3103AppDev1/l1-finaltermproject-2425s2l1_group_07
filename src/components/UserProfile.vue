@@ -7,11 +7,26 @@
 
       <!-- Profile Header -->
       <div class="profile-header">
-        <img
-          id="profile-picture"
-          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRaOk8qE9ecVIYpm7FH-llQ7EWtS59dttOzza3xloSHG7nTKFW5cWU0KFwvm-1gCgRXKGk&usqp=CAU"
-          alt="Profile Picture"
-        />
+        <div class="profile-pic-wrapper">
+          <img
+            id="profile-picture"
+            :src="user.photoURL || defaultPhoto"
+            alt="Profile Picture"
+          />
+
+          <!-- Edit photo only visible in edit mode -->
+          <div v-if="editMode" class="edit-photo-controls">
+            <label class="edit-photo-label">
+              Edit Photo
+              <input
+                type="file"
+                accept="image/png, image/jpeg"
+                @change="handlePhotoUpload"
+                hidden
+              />
+            </label>
+          </div>
+        </div>
 
         <div class="nickname-section">
           <div v-if="!editMode">
@@ -27,7 +42,6 @@
           </div>
         </div>
       </div>
-
 
       <!-- About Me -->
       <h3>About Me</h3>
@@ -145,6 +159,7 @@ export default {
       },
       joinedListings: [],
       createdListings: [],
+      defaultPhoto: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRaOk8qE9ecVIYpm7FH-llQ7EWtS59dttOzza3xloSHG7nTKFW5cWU0KFwvm-1gCgRXKGk&usqp=CAU",
     };
   },
   async created() {
@@ -263,6 +278,22 @@ export default {
       } else {
         this.createdListings[index].showDetails = !this.createdListings[index].showDetails;
       }
+    },
+    handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const validTypes = ["image/jpeg", "image/png"];
+      if (!validTypes.includes(file.type)) {
+        alert("Please upload a JPG or PNG file.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.user.photoURL = e.target.result;
+      };
+      reader.readAsDataURL(file);
     },
   },
 };
@@ -479,6 +510,26 @@ export default {
       gap: 16px;
       margin-bottom: 20px;
       justify-content: center;
+    }
+    .profile-pic-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .edit-photo-controls {
+      margin-top: 8px;
+    }
+
+    .edit-photo-label {
+      background-color: #744c97;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+      display: inline-block;
     }
 
     #profile-picture {
