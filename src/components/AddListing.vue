@@ -41,7 +41,8 @@
             <label for="description">Description / Additional Remarks</label>
             <textarea v-model="newListing.description" id="description" rows="4" placeholder="e.g Equipment to bring: Racket"></textarea>
 
-            <button type="submit"> Find Player(s)</button>
+            <router-link to="/Added" class="submit-btn">Find Player(s)</router-link>
+       
           
         </form>
     </div>
@@ -217,7 +218,7 @@ input[type="radio"]:checked ~ label {
 }
 
 /* Submit button */
-button[type="submit"] {
+.submit-btn {
     width: 100%;
     padding: 12px;
     margin-top: 20px;
@@ -228,9 +229,11 @@ button[type="submit"] {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    text-align: center;
+    text-decoration: none;
 }
 
-button[type="submit"]:hover {
+.submit-btn:hover {
     background: #5c2b87;
 }
 
