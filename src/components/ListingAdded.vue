@@ -8,7 +8,7 @@
                 <div class="checkmark">✔</div>
                     <h1>Listing Added!</h1>
                     <p>Your listing has been successfully added.</p>
-                    <router-link to="/Explore" class="return-btn">Return to Homepage</router-link>
+                    <router-link to="/Explore" class="return-btn">Return to Explore</router-link>
                 </div>
             </div>
         </div>
