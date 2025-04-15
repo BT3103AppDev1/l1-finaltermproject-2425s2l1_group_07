@@ -7,35 +7,59 @@
       <router-link to="/Explore"> 
         <div class="logo">MatchUp</div>
       </router-link>
-      <button class="list-button" @click="goToAddListing">Add new listing +</button>
+      
+      <button class="list-button" @click="goToAddListing"><span>Add new listing</span> +</button>
     </div>
+    <div class="nav-right">
     <ul class="nav-links">
     <li>
         <router-link to="/favourites">
-            <i class="fas fa-heart"></i> Favourites
+            <i class="fas fa-heart"></i> <span>Favourites</span>
         </router-link>
     </li>
     <li>
         <router-link to="/chats">
-            <i class="fas fa-comment-dots"></i> Chats
+            <i class="fas fa-comment-dots"></i> <span>Chats</span>
         </router-link>
     </li>
         <li>
         <router-link to="/profile">
-            <i class="fas fa-user"></i> My Profile
+            <i class="fas fa-user"></i> <span>My Profile</span>
         </router-link>
     </li>
+    <button class="logout-btn" @click="signOut">Log Out</button>
 
     </ul>
+    </div>
   </nav>
   </template>
   
   <script>
+  import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
   export default {
+    data() {
+      return {
+        user: false,
+      }
+    },
+    mounted() {
+        const auth = getAuth();
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            this.user = user;
+          }
+        });
+    },
     methods: {
       goToAddListing() {
         this.$router.push('/add-listing');
-      }
+      },
+      signOut() {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        signOut(auth, user);
+        this.$router.push("/");
+     }
     }
   };
   </script>
@@ -127,21 +151,88 @@
     color: #ddd; /* Lighter color on hover */
 }
 
-/* Responsive Design */
-@media (max-width: 600px) {
-    .navbar {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .navbar .nav-links {
-        margin-top: 10px;
-        flex-direction: column;
-        gap: 10px;
-    }
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 30px; /* space between nav-links and logout button */
+  margin-top: 15px;
+}
+
+.logout-btn {
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: white;
+    color: #744c97;
+}
+
+@media (max-width: 830px) {
+  .nav-links li a span{
+    display: none !important;
+  }
+
+  .nav-links {
+    flex-direction: row;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+    padding: 0;
+  }
+
+  .list-button {
+    padding: 8px 12px;
+    font-size: 20px;
+  }
+
+  .nav-left {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .navbar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .list-button {
+    background-color: #3c9c65; /* Green button */
+    color: white; /* White text */
+    font-size: 16px;
+    font-weight: bold;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .logout-btn {
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+.logout-btn:hover {
+    background-color: white;
+    color: #744c97;
+  }
 }
   
-
 
 </style>
   

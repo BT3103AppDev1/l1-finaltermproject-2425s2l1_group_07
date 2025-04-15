@@ -41,7 +41,8 @@
             <label for="description">Description / Additional Remarks</label>
             <textarea v-model="newListing.description" id="description" rows="4" placeholder="e.g Equipment to bring: Racket"></textarea>
 
-            <button type="submit">Find Player(s)</button>
+            <router-link to="/Added" class="submit-btn">Find Player(s)</router-link>
+       
           
         </form>
     </div>
@@ -49,7 +50,9 @@
 
 <script>
 import { useRouter } from 'vue-router';
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "@/firebase.js";
+import { getAuth } from "firebase/auth";
 
 export default {
     setup() {
@@ -74,17 +77,26 @@ export default {
         goBack() {
             this.router.push('/Explore');
         },
-        addListing() {
-            const db = getFirestore(); 
-            const listingsRef = collection(db, "listings"); 
+        async addListing() {
+            const auth = getAuth();
+            const user = auth.currentUser;
 
-            addDoc(listingsRef, this.newListing)
-                .then(() => {
-                    this.router.push('/');
-                })
-                .catch(error => {
-                    console.error("Error adding document: ", error);
-                });
+            if (!user) {
+                alert("You must be logged in to create a listing.");
+                return;
+            }
+
+            const listingData = {
+                ...this.newListing,
+                ownerId: user.email,
+            };
+            try {
+                await addDoc(collection(db, "listings"), listingData);
+                this.router.push('/Explore');
+            } catch (error) {
+                console.error("Error adding listing: ", error);
+                alert("Failed to add listing. Please try again.");
+            }
         }
     }
 };
@@ -206,7 +218,7 @@ input[type="radio"]:checked ~ label {
 }
 
 /* Submit button */
-button[type="submit"] {
+.submit-btn {
     width: 100%;
     padding: 12px;
     margin-top: 20px;
@@ -217,9 +229,11 @@ button[type="submit"] {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    text-align: center;
+    text-decoration: none;
 }
 
-button[type="submit"]:hover {
+.submit-btn:hover {
     background: #5c2b87;
 }
 
@@ -236,3 +250,4 @@ button[type="submit"]:hover {
     }
 }
 </style>
+

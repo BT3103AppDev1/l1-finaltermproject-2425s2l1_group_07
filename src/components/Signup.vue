@@ -24,7 +24,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth } from '@/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword,sendEmailVerification } from 'firebase/auth';
 import Navbar from "@/components/Navbar.vue";
 
   export default {
@@ -44,8 +44,12 @@ import Navbar from "@/components/Navbar.vue";
           const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
           const user = userCredential.user;
           console.log('User signed up:', user);
-          alert(`Signup successful! Welcome, ${name.value}`);
-          router.push("/Explore");
+          await sendEmailVerification(user);
+          alert(`Signup successful! A verification email has been sent to ${email.value}. Please verify before logging in.`);
+          // Log user out immediately to prevent access before verification
+          await signOut(auth);
+          
+          router.push("/Login"); 
           } catch (error) {
             errorMessage.value = "Signup failed. Please try again."
             console.error('Signup error:', error.code, error.message);

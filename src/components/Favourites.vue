@@ -131,7 +131,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 body {
   font-family: 'Roboto', sans-serif;
   background-color: #e1dfdfc4;
@@ -150,7 +150,7 @@ h1 {
     list-style: none;
     display: flex; /* Enables flexbox */
     flex-wrap: wrap; /* Allows wrapping to the next line */
-    justify-content: center; /* Centers the items */
+    justify-content: flex-start; /* Centers the items */
     gap: 50px; /* Adds spacing between items */
     padding: 0; /* Removes default padding */
 }

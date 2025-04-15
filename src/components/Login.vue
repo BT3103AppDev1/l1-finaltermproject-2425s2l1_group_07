@@ -12,8 +12,12 @@
           <button type="submit" class="login-btn">Login</button>
         </form>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+      
         <div class="links">
           <router-link to="/SignUp">Create an Account</router-link>
+        </div>
+        <div class="links">
+          <a href="#" @click.prevent="resetPassword">Forgot Password?</a>
         </div>
       </div>
     </div>
@@ -24,7 +28,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth } from '@/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import Navbar from "@/components/Navbar.vue";
 
   export default {
@@ -40,12 +44,35 @@ import Navbar from "@/components/Navbar.vue";
 
         const login = async () => {
           try {
-            await signInWithEmailAndPassword(auth, email.value, password.value);
-            alert("Login successful!");
+            const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
+            const user = userCredential.user;
+
+            // Check if email is verified
+            if (!user.emailVerified) {
+              await signOut(auth); // Immediately log out unverified users
+              errorMessage.value = "Please verify your email before logging in.";
+              return;
+            }
+
+            alert("Login successful! Redirecting...");
             router.push("/Explore");
           } catch (error) {
             errorMessage.value = "Invalid email or password. Please try again.";
             console.error("Login Error:", error.message);
+          }
+        };
+
+        const resetPassword = async () => {
+          if (!email.value) {
+            errorMessage.value = "Please enter your email first.";
+            return;
+          }
+          try {
+            await sendPasswordResetEmail(auth, email.value);
+            alert(`Password reset email sent to ${email.value}. Check your inbox.`);
+          } catch (error) {
+            errorMessage.value = "Error sending password reset email. Try again.";
+            console.error("Password Reset Error:", error.message);
           }
         };
 
@@ -63,7 +90,7 @@ import Navbar from "@/components/Navbar.vue";
           document.removeEventListener('click', handleClickOutside);
         });
 
-    return { email, password, errorMessage, cardRef, login };
+    return { email, password, errorMessage, cardRef, login, resetPassword };
     },
   };
 </script>

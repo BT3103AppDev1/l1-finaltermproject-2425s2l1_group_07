@@ -5,8 +5,8 @@
           <div class="logo">MatchUp</div>
           <nav>
             <ul>
-              <li><a href="#">Contact</a></li>
-              <li><router-link to="/Explore" class="login-btn">EXPLORE rm later</router-link></li>
+              <li><a href="mailto:matchupfeedback@gmail.com">Contact</a></li>
+
               <li><router-link to="/login" class="login-btn">Log In</router-link></li>
 
             </ul>
@@ -37,7 +37,7 @@
           <div class="feature-card">
             <div class="icon">🔍</div>
             <h3>Smart Matching</h3>
-            <p>Our algorithm finds connections based on shared interests and compatibility</p>
+            <p>Our platform allows you to filter matches based on shared interests and compatibility</p>
           </div>
           <div class="feature-card">
             <div class="icon">🔒</div>
@@ -47,7 +47,7 @@
           <div class="feature-card">
             <div class="icon">🌟</div>
             <h3>Quality Matches</h3>
-            <p>Focus on meaningful connections with verified profiles</p>
+            <p>Focus on meaningful matches/games with fellow users with detailed game descriptions</p>
           </div>
         </div>
       </section>

@@ -3,6 +3,7 @@ import { getFirestore, collection, getDoc, doc, updateDoc } from 'firebase/fires
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getDatabase } from "firebase/database";
 
+
 const firebaseConfig = {
     apiKey: "AIzaSyD43V2HIX_PDP5P6fxktVPXjhh1Lv994LU",
     authDomain: "bt3103-matchup.firebaseapp.com",
