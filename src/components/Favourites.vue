@@ -18,6 +18,7 @@
             <button class="toggle-btn" @click="listing.showDetails = !listing.showDetails">
               {{ listing.showDetails ? 'Less ⬆️' : 'More ⬇️' }}
             </button>
+            <button class="chat-btn" @click="joinChat(listing)">Join Chat</button>
         </div>
       </li>
     </ul>
@@ -25,8 +26,10 @@
 </template>
 
 <script>
-import { db, getDoc, doc, updateDoc } from '../firebase.js';
+import { getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
+import { db } from "@/firebase.js";
 import { auth } from '@/firebase';
+import { getAuth } from "firebase/auth";
 
 export default {
   name: 'Favourites',
@@ -117,8 +120,47 @@ export default {
           this.listings = this.listings.filter(listing => listing.id !== id);
       },
 
-      joinChat(sportName) {
-          alert(`Joining chat for ${sportName}!`);
+      async joinChat(match) {
+        const auth = getAuth();
+        const user = auth.currentUser;
+
+        if (!user || !user.email) {
+            alert("User not authenticated");
+            return;
+        }
+
+        const userEmail = user.email;
+        const userRef = doc(db, "users", userEmail);
+        let userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+            await setDoc(userRef, {
+            joinedChats: [],
+            favourites: [],
+            name: user.displayName || "",
+            });
+
+            userSnap = await getDoc(userRef);
+        }
+
+        const userData = userSnap.data();
+        let joinedChats = userData?.joinedChats || [];
+
+        if (joinedChats.some((chat) => chat.id === match.id)) {
+            alert("Already joined this chat!");
+            return;
+        }
+
+        joinedChats.push({
+            id: match.id,
+            title: match.title,
+            time: match.time,
+        });
+
+        await setDoc(userRef, { joinedChats }, { merge: true });
+
+        alert(`Joined ${match.title} chat!`);
+        this.$router.push("/chats");
       },
 
       toggleDetails(event) {
