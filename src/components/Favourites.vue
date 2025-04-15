@@ -9,16 +9,15 @@
         <div class="sport-details">
           <p><span class="highlight">Location:</span> {{ listing.location }}</p>
           <p><span class="highlight">Time:</span> {{ formatTime(listing.time) }}</p>
-          <button class="toggle-btn" @click="toggleDetails($event)">More ⬇️</button>
-          <div class="hidden-details">
-            <p><span class="highlight">Players Needed:</span> {{ listing.playersNeeded }}</p>
-            <p><span class="highlight">Cost:</span> {{ listing.cost }}</p>
-            <p><span class="highlight">Experience Level:</span> <span class="stars">{{ listing.experience }}</span></p>
-            <p><span class="highlight">Description / Additional Remarks:</span> {{ listing.description }}</p>
-          </div>
-          <button class="chat-btn" @click="joinChat(listing.sport)">
-            Join Chat <span class="chat-icon">➡️</span>
-          </button>
+          <div class="extra-details" v-show="listing.showDetails">
+              <p><span class="highlight">Players Needed:</span> {{ listing.playersNeeded }}</p>
+              <p><span class="highlight">Cost:</span> {{ listing.cost }}</p>
+              <p><span class="highlight">Experience:</span> {{ listing.experience }}</p>
+              <p v-if="listing.description"><span class="highlight">Description:</span> {{ listing.description }}</p>
+            </div>
+            <button class="toggle-btn" @click="listing.showDetails = !listing.showDetails">
+              {{ listing.showDetails ? 'Less ⬆️' : 'More ⬇️' }}
+            </button>
         </div>
       </li>
     </ul>
@@ -89,7 +88,7 @@ export default {
               const listingDocSnap = await getDoc(listingDocRef);
 
               if (listingDocSnap.exists()) {
-                  return { id: listingDocSnap.id, ...listingDocSnap.data() };
+                  return { id: listingDocSnap.id, showDetails: false, ...listingDocSnap.data() };
               } else {
                   console.warn(`Listing with ID ${listingId} not found.`);
                   return null;
@@ -145,7 +144,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 body {
   font-family: 'Roboto', sans-serif;
   background-color: #e1dfdfc4;
