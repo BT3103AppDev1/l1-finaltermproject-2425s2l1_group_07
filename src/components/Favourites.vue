@@ -8,7 +8,7 @@
         <div class="sport-title">{{ listing.title }}</div>
         <div class="sport-details">
           <p><span class="highlight">Location:</span> {{ listing.location }}</p>
-          <p><span class="highlight">Time:</span> {{ listing.time }}</p>
+          <p><span class="highlight">Time:</span> {{ formatTime(listing.time) }}</p>
           <button class="toggle-btn" @click="toggleDetails($event)">More ⬇️</button>
           <div class="hidden-details">
             <p><span class="highlight">Players Needed:</span> {{ listing.playersNeeded }}</p>
@@ -27,6 +27,7 @@
 
 <script>
 import { db, getDoc, doc, updateDoc } from '../firebase.js';
+import { auth } from '@/firebase';
 
 export default {
   name: 'Favourites',
@@ -42,15 +43,28 @@ export default {
   },
 
   methods: {
-      async getCurrentUserEmail() {
-          // const user = auth.currentUser;
-          // if (user) {
-          //     return user.email; 
-          // } else {
-          //     throw new Error("No user is currently logged in.");
-          // }
+    formatTime(isoString) {
+      const date = new Date(isoString);
+    
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
 
-          return 'test@email.com'; // test functionality
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
+    },
+    
+      async getCurrentUserEmail() {
+          const user = auth.currentUser;
+          if (user) {
+              return user.email; 
+          } else {
+              throw new Error("No user is currently logged in.");
+          }
+
+          // return 'test@email.com'; // test functionality
       },
 
       async fetchListings() {
@@ -131,7 +145,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 body {
   font-family: 'Roboto', sans-serif;
   background-color: #e1dfdfc4;

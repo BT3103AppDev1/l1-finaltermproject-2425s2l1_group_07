@@ -87,7 +87,7 @@
           <div class="sport-title">{{ listing.title }}</div>
           <div class="sport-details">
             <p><span class="highlight">Location:</span> {{ listing.location }}</p>
-            <p><span class="highlight">Time:</span> {{ listing.time }}</p>
+            <p><span class="highlight">Time:</span> {{ formatTime(listing.time) }}</p>
             <div class="extra-details" v-show="listing.showDetails">
               <p><span class="highlight">Players Needed:</span> {{ listing.playersNeeded }}</p>
               <p><span class="highlight">Cost:</span> {{ listing.cost }}</p>
@@ -108,14 +108,14 @@
           <div class="sport-title">{{ listing.title }}</div>
           <div class="sport-details">
             <p><span class="highlight">Location:</span> {{ listing.location }}</p>
-            <p><span class="highlight">Time:</span> {{ listing.time }}</p>
+            <p><span class="highlight">Time:</span> {{ formatTime(listing.time) }}</p>
             <div class="extra-details" v-show="listing.showDetails">
               <p><span class="highlight">Players Needed:</span> {{ listing.playersNeeded }}</p>
               <p><span class="highlight">Cost:</span> {{ listing.cost }}</p>
               <p><span class="highlight">Experience:</span> {{ listing.experience }}</p>
               <p v-if="listing.description"><span class="highlight">Description:</span> {{ listing.description }}</p>
             </div>
-            <button class="toggle-btn" @click="toggleDetails(index, 'joined')">
+            <button class="toggle-btn" @click="listing.showDetails = !listing.showDetails">
               {{ listing.showDetails ? 'Less ⬆️' : 'More ⬇️' }}
             </button>
           </div>
@@ -175,6 +175,19 @@ export default {
   },
 
   methods: {
+    formatTime(isoString) {
+      const date = new Date(isoString);
+    
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
+    },
+
     async fetchUserProfile() {
       try {
         const docRef = doc(db, "users", this.userId);

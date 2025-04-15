@@ -24,8 +24,10 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth } from '@/firebase';
-import { createUserWithEmailAndPassword,sendEmailVerification } from 'firebase/auth';
+import { createUserWithEmailAndPassword,sendEmailVerification, signOut } from 'firebase/auth';
 import Navbar from "@/components/Navbar.vue";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+const db = getFirestore();
 
   export default {
     components: {
@@ -43,6 +45,11 @@ import Navbar from "@/components/Navbar.vue";
           try {
           const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
           const user = userCredential.user;
+
+          await setDoc(doc(db, "users", email.value), {
+            name: name.value,
+          });
+
           console.log('User signed up:', user);
           await sendEmailVerification(user);
           alert(`Signup successful! A verification email has been sent to ${email.value}. Please verify before logging in.`);

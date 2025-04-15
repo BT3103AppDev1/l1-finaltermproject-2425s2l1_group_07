@@ -64,7 +64,7 @@
               <span class="highlight">Sport Type:</span> {{ match.sportType }}
             </p>
             <p><span class="highlight">Location:</span> {{ match.location }}</p>
-            <p><span class="highlight">Time:</span> {{ match.time }}</p>
+            <p><span class="highlight">Time:</span> {{ formatTime(match.time) }}</p>
             <p>
               <span class="highlight">Players Needed:</span>
               {{ match.playersNeeded }}
@@ -131,6 +131,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
+import { auth } from '@/firebase';
 import { getAuth } from "firebase/auth";
 import { db } from "@/firebase.js";
 import Navbar from "@/components/Navbar.vue";
@@ -178,6 +179,19 @@ export default {
     },
   },
   methods: {
+    formatTime(isoString) {
+      const date = new Date(isoString);
+    
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
+    },
+
     matchPassesFilters(match) {
       const matchesSearch =
         match.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
@@ -231,14 +245,14 @@ export default {
       }
     },
     async getCurrentUserEmail() {
-          // const user = auth.currentUser;
-          // if (user) {
-          //     return user.email; 
-          // } else {
-          //     throw new Error("No user is currently logged in.");
-          // }
+          const user = auth.currentUser;
+          if (user) {
+              return user.email; 
+          } else {
+              throw new Error("No user is currently logged in.");
+          }
 
-          return 'test@email.com'; // test functionality
+          // return 'test@email.com'; // test functionality
       },
 
     async addToFavourites(listing) {
