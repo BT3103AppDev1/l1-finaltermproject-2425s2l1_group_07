@@ -70,6 +70,12 @@
         <p><strong>Preview:</strong> {{ editedUser.sportsInput.split(',').map(s => s.trim()).join(', ') }}</p>
       </div>
 
+      <!-- Email -->
+      <h3>Email</h3>
+      <div class="email-box">
+        <p>{{ user.email || "No email available" }}</p>
+      </div>
+
       <!-- Buttons -->
       <button type="edit" v-if="!editMode" @click="startEditing">Edit Profile</button>
       <div v-else>
@@ -138,7 +144,7 @@ import {
   where
 } from "firebase/firestore";
 
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, updateProfile } from "firebase/auth";
 
 
 export default {
@@ -167,6 +173,7 @@ export default {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.userId = user.email;
+        this.user.email = user.email;
         await this.fetchUserProfile();
         await this.fetchJoinedListings();
         await this.fetchCreatedListings();
@@ -324,9 +331,22 @@ export default {
         : "";
     },
 
+    cancelEditing() {
+      // Confirm before canceling
+      const confirmCancel = confirm("Are you sure you want to discard the changes to your profile?");
+      if (confirmCancel) {
+        // If confirmed, restore the original data and exit edit mode
+        this.editMode = false;
+        this.editedUser.nickname = this.user.nickname;
+        this.editedUser.about = this.user.about;
+        this.editedUser.sportsInput = this.user.sports.join(", ");
+      }
+    },
+
     async saveChanges() {
       if (!confirm("Are you sure you want to save changes to your profile?")) return;
 
+      // Update Firebase
       this.user.nickname = this.editedUser.nickname;
       this.user.about = this.editedUser.about;
 
@@ -351,6 +371,16 @@ export default {
         };
 
         await setDoc(userRef, updatedUserData);
+
+         // Update auth
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          await updateProfile(currentUser, {
+            displayName: this.user.nickname,
+            photoURL: this.user.photoURL || this.defaultPhoto
+          });
+        }
 
         this.editMode = false;
         alert("✅ Profile updated successfully!");
@@ -461,6 +491,15 @@ export default {
     margin: 10px 20px;
     text-align: left;
     padding: 10px;
+    background-color: #e1dfdfc4;
+    border-radius: 8px;
+    line-height: 1.5;
+  }
+
+  .email-box {
+    margin: 10px 20px;
+    text-align: center;
+    padding: 1px;
     background-color: #e1dfdfc4;
     border-radius: 8px;
     line-height: 1.5;

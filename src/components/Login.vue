@@ -27,9 +27,10 @@
 <script>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
-import { auth } from '@/firebase';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { db, auth } from '@/firebase';
+import { signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth';
 import Navbar from "@/components/Navbar.vue";
+import { getDoc, doc } from 'firebase/firestore';
 
   export default {
     components: {
@@ -54,8 +55,14 @@ import Navbar from "@/components/Navbar.vue";
               return;
             }
 
-            alert("Login successful! Redirecting...");
-            router.push("/Explore");
+            const userDoc = await getDoc(doc(db, "users", user.email));
+            if (!userDoc.exists() || userDoc.data().firstTime !== false) {
+              alert("Login successful! Redirecting...");
+              router.push("/Onboarding");
+            } else {
+              alert("Login successful! Redirecting...");
+              router.push("/Explore");
+            }
           } catch (error) {
             errorMessage.value = "Invalid email or password. Please try again.";
             console.error("Login Error:", error.message);

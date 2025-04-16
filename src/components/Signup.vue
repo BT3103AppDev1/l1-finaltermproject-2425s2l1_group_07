@@ -6,7 +6,28 @@
             <h2>Welcome to MatchUp! 🏆</h2>
             <p class="subtitle">Create your account and start playing!</p>
             <form @submit.prevent="signup">
+              <div class="profile-pic-wrapper" style="margin-bottom: 16px;">
+                <label for="profile-picture-upload" style="cursor: pointer;">
+                  <img
+                    :src="profileImageBase64 || defaultPhoto"
+                    alt="Profile Picture"
+                    style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 2px solid #744c97;"
+                  />
+                  </label>
+                  <input
+                    id="profile-picture-upload"
+                    type="file"
+                    accept="image/png, image/jpeg"
+                    @change="handlePhotoUpload"
+                    hidden
+                  />
+
+                  <div style="margin-top: 8px; color: #5c2b87; font-weight: bold;">
+                    Choose Profile Photo
+                  </div>
+                </div>
                 <input type="text" v-model="name" placeholder="Full Name" required>
+                <input type="text" v-model="nickname" placeholder="Display Name" required />
                 <input type="email" v-model="email" placeholder="Email" required>
                 <input type="password" v-model="password" placeholder="Password" required>
                 <button type="submit" class="signup-btn">Sign Up</button>
@@ -24,10 +45,10 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth } from '@/firebase';
-import { createUserWithEmailAndPassword,sendEmailVerification, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword,sendEmailVerification, signOut, updateProfile } from 'firebase/auth';
 import Navbar from "@/components/Navbar.vue";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
-const db = getFirestore();
+const db = getFirestore(); 
 
   export default {
     components: {
@@ -40,18 +61,34 @@ const db = getFirestore();
         const password = ref("");
         const errorMessage = ref("");
         const cardRef = ref(null);
+        const nickname = ref("");
+        const defaultPhoto = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRaOk8qE9ecVIYpm7FH-llQ7EWtS59dttOzza3xloSHG7nTKFW5cWU0KFwvm-1gCgRXKGk&usqp=CAU";
+        const profileImageBase64 = ref("");
 
         const signup = async () => {
           try {
           const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
           const user = userCredential.user;
+          await sendEmailVerification(user);
 
+          // Save profile data to Firestore
           await setDoc(doc(db, "users", email.value), {
+            uid: user.uid,
             name: name.value,
+            nickname: nickname.value,
+            photoURL: profileImageBase64.value || defaultPhoto,
+            email: email.value,
+            joinedChats: [],
+            firstTime: true
+          });
+
+          // Update Firebase Auth profile
+          await updateProfile(user, {
+            displayName: nickname.value,
+            photoURL: profileImageBase64.value || defaultPhoto
           });
 
           console.log('User signed up:', user);
-          await sendEmailVerification(user);
           alert(`Signup successful! A verification email has been sent to ${email.value}. Please verify before logging in.`);
           // Log user out immediately to prevent access before verification
           await signOut(auth);
@@ -61,7 +98,57 @@ const db = getFirestore();
             errorMessage.value = "Signup failed. Please try again."
             console.error('Signup error:', error.code, error.message);
           }
-        }
+        };
+
+        const handlePhotoUpload = async (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          const validTypes = ["image/jpeg", "image/png"];
+          if (!validTypes.includes(file.type)) {
+            alert("Please upload a JPG or PNG file.");
+            return;
+          }
+
+          const img = new Image();
+          const reader = new FileReader();
+
+          reader.onload = (e) => {
+            img.src = e.target.result;
+
+            img.onload = () => {
+              const MAX_WIDTH = 300;
+              const MAX_HEIGHT = 300;
+
+              let width = img.width;
+              let height = img.height;
+
+              if (width > height) {
+                if (width > MAX_WIDTH) {
+                  height *= MAX_WIDTH / width;
+                  width = MAX_WIDTH;
+                }
+              } else {
+                if (height > MAX_HEIGHT) {
+                  width *= MAX_HEIGHT / height;
+                  height = MAX_HEIGHT;
+                }
+              }
+
+              const canvas = document.createElement("canvas");
+              canvas.width = width;
+              canvas.height = height;
+
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, width, height);
+
+              // Reduce quality if needed (0.7 is a good balance)
+              profileImageBase64.value = canvas.toDataURL("image/jpeg", 0.7);
+            };
+          };
+
+          reader.readAsDataURL(file);
+        };
 
         const handleClickOutside = (event) => {
           if (router.currentRoute.value.path === "/SignUp" && cardRef.value && !cardRef.value.contains(event.target)) {
@@ -77,7 +164,8 @@ const db = getFirestore();
           document.removeEventListener('click', handleClickOutside);
         });
 
-      return { name, email, password, errorMessage, cardRef, signup };
+      return { name, email, password, errorMessage, cardRef, signup, nickname,
+              defaultPhoto, handlePhotoUpload, profileImageBase64 };
     },
   };
 </script>

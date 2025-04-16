@@ -71,7 +71,9 @@
     onSnapshot,
     doc,
     getDoc,
-    updateDoc
+    updateDoc,
+    orderBy,
+    serverTimestamp
   } from 'firebase/firestore';
   import { getAuth, onAuthStateChanged } from 'firebase/auth';
   import Navbar from '@/components/Navbar.vue';
@@ -154,7 +156,11 @@
       joinRoom() {
         if (!this.selectedRoom) return;
         const q = query(collection(db, 'messages'), where('room', '==', this.selectedRoom));
-        onSnapshot(q, (snapshot) => {
+        const sortedQuery = query(
+          q,  // Use the previously defined query (base query with 'where')
+          orderBy('createdAt', 'asc')  // Sort by createdAt in ascending order
+        );
+        onSnapshot(sortedQuery, (snapshot) => {
           this.messages[this.selectedRoom] = snapshot.docs.map(doc => doc.data());
         });
       },
@@ -166,7 +172,7 @@
           text: this.newMessage,
           userId: this.currentUser.uid,
           username: this.currentUser.displayName || 'You',
-          createdAt: new Date()
+          createdAt: serverTimestamp()
         });
         this.newMessage = '';
       },
