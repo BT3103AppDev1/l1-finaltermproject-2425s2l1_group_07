@@ -85,7 +85,7 @@ const db = getFirestore();
           // Update Firebase Auth profile
           await updateProfile(user, {
             displayName: nickname.value,
-            photoURL: profileImageBase64.value || defaultPhoto
+            // photoURL: profileImageBase64.value || defaultPhoto
           });
 
           console.log('User signed up:', user);
@@ -100,7 +100,7 @@ const db = getFirestore();
           }
         };
 
-        const handlePhotoUpload = async (event) => {
+        const handlePhotoUpload = (event) => {
           const file = event.target.files[0];
           if (!file) return;
 
@@ -110,43 +110,18 @@ const db = getFirestore();
             return;
           }
 
-          const img = new Image();
+          if (file.size > 500 * 1024) { // 500KB limit
+            alert("Please select an image smaller than 500KB");
+            return;
+          }
+
           const reader = new FileReader();
-
           reader.onload = (e) => {
-            img.src = e.target.result;
-
-            img.onload = () => {
-              const MAX_WIDTH = 300;
-              const MAX_HEIGHT = 300;
-
-              let width = img.width;
-              let height = img.height;
-
-              if (width > height) {
-                if (width > MAX_WIDTH) {
-                  height *= MAX_WIDTH / width;
-                  width = MAX_WIDTH;
-                }
-              } else {
-                if (height > MAX_HEIGHT) {
-                  width *= MAX_HEIGHT / height;
-                  height = MAX_HEIGHT;
-                }
-              }
-
-              const canvas = document.createElement("canvas");
-              canvas.width = width;
-              canvas.height = height;
-
-              const ctx = canvas.getContext("2d");
-              ctx.drawImage(img, 0, 0, width, height);
-
-              // Reduce quality if needed (0.7 is a good balance)
-              profileImageBase64.value = canvas.toDataURL("image/jpeg", 0.7);
-            };
+            profileImageBase64.value = e.target.result; // Use the ref directly
           };
-
+          reader.onerror = () => {
+            errorMessage.value = "Error reading image file";
+          };
           reader.readAsDataURL(file);
         };
 

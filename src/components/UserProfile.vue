@@ -158,6 +158,7 @@ export default {
         nickname: "",
         about: "",
         sports: [],
+        photoURL: "",
       },
       editedUser: {
         about: "",
@@ -378,7 +379,7 @@ export default {
         if (currentUser) {
           await updateProfile(currentUser, {
             displayName: this.user.nickname,
-            photoURL: this.user.photoURL || this.defaultPhoto
+            // photoURL: this.user.photoURL || this.defaultPhoto
           });
         }
 
@@ -400,12 +401,17 @@ export default {
         return;
       }
 
+      if (file.size > 500 * 1024) { // 500KB limit
+        alert("Please select an image smaller than 500KB");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = async (e) => {
         const base64Image = e.target.result;
 
         // Update local state
-        this.user.photoURL = base64Image;
+       this.user.photoURL = base64Image;
 
         // ✅ Save to Firestore
         try {
@@ -420,8 +426,6 @@ export default {
             ...userData,
             photoURL: base64Image
           });
-
-          alert("✅ Profile photo updated and saved!");
         } catch (error) {
           console.error("❌ Error saving profile photo:", error);
           alert("Failed to save profile photo.");
