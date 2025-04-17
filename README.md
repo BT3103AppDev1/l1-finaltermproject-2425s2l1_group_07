@@ -28,5 +28,5 @@ npm run dev
 npm run build
 ```
 
-### additional notes
-- profile picture upload can only take in a max file size of 500 kb due to firestore restrictions
+### Additional Notes
+- Profile picture upload can only take in a max file size of 500 kb due to Firestore restrictions
