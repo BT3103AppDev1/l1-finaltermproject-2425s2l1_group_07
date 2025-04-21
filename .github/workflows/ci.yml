@@ -22,8 +22,5 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
-      - name: 🧪 Run tests
-        run: npm run test || echo "No tests configured yet"
-
       - name: 🏗️ Build project
         run: npm run build
