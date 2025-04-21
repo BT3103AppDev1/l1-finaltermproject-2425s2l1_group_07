@@ -11,10 +11,6 @@
         <div v-else>
           <header>
             <h1>Chat Rooms</h1>
-            <div class="online-users">
-              <span>Online Users:</span>
-              <span class="user-count">{{ onlineUsers.length }}</span>
-            </div>
           </header>
   
           <div class="discussion-bar">
@@ -71,9 +67,7 @@ import {
   onSnapshot,
   doc,
   getDoc,
-  updateDoc,
-  orderBy,
-  serverTimestamp
+  updateDoc
 } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import Navbar from '@/components/Navbar.vue';
@@ -86,7 +80,6 @@ export default {
       joinedRooms: [],
       messages: {},
       newMessage: '',
-      onlineUsers: [],
       currentUser: {},
       userNickname: '' // NEW
     };
@@ -124,117 +117,82 @@ export default {
       }
     },
 
-      async loadUserRooms() {
-        const userRef = doc(db, 'users', this.currentUser.email);
-        const userSnap = await getDoc(userRef);
-  
-        if (!userSnap.exists()) {
-          console.warn("User document not found.");
-          return;
-        }
-  
-        const joinedChatRefs = userSnap.data().joinedChats || [];
-  
-        // Case 1: Full room data present
-        if (joinedChatRefs.length > 0 && joinedChatRefs[0]?.title) {
-          this.joinedRooms = joinedChatRefs;
-        } else {
-          // Case 2: Just a list of IDs
-          const roomFetches = joinedChatRefs.map(async (roomIdOrObj) => {
-            const roomId = roomIdOrObj.id || roomIdOrObj;
-            const listingRef = doc(db, 'listings', roomId);
-            const listingSnap = await getDoc(listingRef);
-  
-            if (listingSnap.exists()) {
-              return {
-                id: listingSnap.id,
-                ...listingSnap.data()
-              };
-            }
-            return null;
-          });
-  
-          const resolvedRooms = await Promise.all(roomFetches);
-          this.joinedRooms = resolvedRooms.filter(room => room !== null);
-        }
-  
-        this.selectedRoom = this.joinedRooms[0]?.id || '';
-        this.joinRoom();
-      },
-  
-      joinRoom() {
-        if (!this.selectedRoom) return;
-        const q = query(collection(db, 'messages'), where('room', '==', this.selectedRoom));
-        const sortedQuery = query(
-          q,  // Use the previously defined query (base query with 'where')
-          orderBy('createdAt', 'asc')  // Sort by createdAt in ascending order
-        );
-        onSnapshot(sortedQuery, (snapshot) => {
-          this.messages[this.selectedRoom] = snapshot.docs.map(doc => doc.data());
+    async loadUserRooms() {
+      const userRef = doc(db, 'users', this.currentUser.email);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) return;
+
+      const joinedChatRefs = userSnap.data().joinedChats || [];
+
+      if (joinedChatRefs.length > 0 && joinedChatRefs[0]?.title) {
+        this.joinedRooms = joinedChatRefs;
+      } else {
+        const roomFetches = joinedChatRefs.map(async (roomIdOrObj) => {
+          const roomId = roomIdOrObj.id || roomIdOrObj;
+          const listingRef = doc(db, 'listings', roomId);
+          const listingSnap = await getDoc(listingRef);
+          return listingSnap.exists() ? { id: listingSnap.id, ...listingSnap.data() } : null;
         });
-      },
-  
-      async sendMessage() {
-        if (!this.newMessage.trim()) return;
-        await addDoc(collection(db, 'messages'), {
-          room: this.selectedRoom,
-          text: this.newMessage,
-          userId: this.currentUser.uid,
-          username: this.userNickanem || this.currentUser.displayName || 'You',
-          createdAt: serverTimestamp()
-        });
-        this.newMessage = '';
-      },
-  
-      async leaveChat() {
-        if (!this.selectedRoom) return;
-  
-        alert("Leaving chat...");
-  
-        const userRef = doc(db, 'users', this.currentUser.email);
-        const userSnap = await getDoc(userRef);
-  
-        if (!userSnap.exists()) {
-          console.warn("User document not found.");
-          return;
-        }
-  
-        let updatedChats = userSnap.data().joinedChats || [];
-  
-        updatedChats = updatedChats.filter(room => {
-          if (typeof room === 'string') {
-            return room !== this.selectedRoom;
-          } else {
-            return room.id !== this.selectedRoom;
-          }
-        });
-  
-        await updateDoc(userRef, {
-          joinedChats: updatedChats
-        });
-  
-        this.joinedRooms = this.joinedRooms.filter(room => room.id !== this.selectedRoom);
-        this.selectedRoom = this.joinedRooms[0]?.id || '';
-        if (this.selectedRoom) {
-          this.joinRoom();
-        }
+        const resolvedRooms = await Promise.all(roomFetches);
+        this.joinedRooms = resolvedRooms.filter(room => room !== null);
       }
+
+      this.selectedRoom = this.joinedRooms[0]?.id || '';
+      this.joinRoom();
     },
-    computed: {
-      selectedRoomObj() {
-        return this.joinedRooms.find(room => room.id === this.selectedRoom) || {};
-      }
+
+    joinRoom() {
+      if (!this.selectedRoom) return;
+      const q = query(collection(db, 'messages'), where('room', '==', this.selectedRoom));
+      onSnapshot(q, (snapshot) => {
+        this.messages[this.selectedRoom] = snapshot.docs.map(doc => doc.data());
+      });
+    },
+
+    async sendMessage() {
+      if (!this.newMessage.trim()) return;
+      await addDoc(collection(db, 'messages'), {
+        room: this.selectedRoom,
+        text: this.newMessage,
+        userId: this.currentUser.uid,
+        username: this.userNickname, // UPDATED
+        createdAt: new Date()
+      });
+      this.newMessage = '';
+    },
+
+    async leaveChat() {
+      if (!this.selectedRoom) return;
+      alert("Leaving chat...");
+      const userRef = doc(db, 'users', this.currentUser.email);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) return;
+
+      let updatedChats = userSnap.data().joinedChats || [];
+      updatedChats = updatedChats.filter(room => {
+        return typeof room === 'string' ? room !== this.selectedRoom : room.id !== this.selectedRoom;
+      });
+
+      await updateDoc(userRef, { joinedChats: updatedChats });
+      this.joinedRooms = this.joinedRooms.filter(room => room.id !== this.selectedRoom);
+      this.selectedRoom = this.joinedRooms[0]?.id || '';
+      if (this.selectedRoom) this.joinRoom();
     }
-  };
-  </script>
-  
+  },
+  computed: {
+    selectedRoomObj() {
+      return this.joinedRooms.find(room => room.id === this.selectedRoom) || {};
+    }
+  }
+};
+</script>
+
   <style scoped>
   .page-wrapper {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    /*background-image: url('@/assets/landing bgnd.jpg');*/
-    /*background: url('landing bgnd.jpg') no-repeat center center fixed;*/
+    background: url('landing%20bgnd.jpg') no-repeat center center fixed;
     background-size: cover;
   }
   
@@ -263,7 +221,7 @@ export default {
   .username {
   font-weight: bold;
   font-size: 12px;
-  color: #f3d1ff; /* soft lavender that complements purple */
+  color: ; /* soft lavender that complements purple */
   margin-bottom: 2px;
 }
 
