@@ -8,17 +8,17 @@
         <div class="sport-title">{{ listing.title }}</div>
         <div class="sport-details">
           <p><span class="highlight">Location:</span> {{ listing.location }}</p>
-          <p><span class="highlight">Time:</span> {{ listing.time }}</p>
-          <button class="toggle-btn" @click="toggleDetails($event)">More ⬇️</button>
-          <div class="hidden-details">
-            <p><span class="highlight">Players Needed:</span> {{ listing.playersNeeded }}</p>
-            <p><span class="highlight">Cost:</span> {{ listing.cost }}</p>
-            <p><span class="highlight">Experience Level:</span> <span class="stars">{{ listing.experience }}</span></p>
-            <p><span class="highlight">Description / Additional Remarks:</span> {{ listing.description }}</p>
-          </div>
-          <button class="chat-btn" @click="joinChat(listing.sport)">
-            Join Chat <span class="chat-icon">➡️</span>
-          </button>
+          <p><span class="highlight">Time:</span> {{ formatTime(listing.time) }}</p>
+          <div class="extra-details" v-show="listing.showDetails">
+              <p><span class="highlight">Players Needed:</span> {{ listing.playersNeeded }}</p>
+              <p><span class="highlight">Cost:</span> {{ listing.cost }}</p>
+              <p><span class="highlight">Experience:</span> {{ listing.experience }}</p>
+              <p v-if="listing.description"><span class="highlight">Description:</span> {{ listing.description }}</p>
+            </div>
+            <button class="toggle-btn" @click="listing.showDetails = !listing.showDetails">
+              {{ listing.showDetails ? 'Less ⬆️' : 'More ⬇️' }}
+            </button>
+            <button class="chat-btn" @click="joinChat(listing)">Join Chat</button>
         </div>
       </li>
     </ul>
@@ -26,7 +26,10 @@
 </template>
 
 <script>
-import { db, getDoc, doc, updateDoc } from '../firebase.js';
+import { getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
+import { db } from "@/firebase.js";
+import { auth } from '@/firebase';
+import { getAuth } from "firebase/auth";
 
 export default {
   name: 'Favourites',
@@ -42,15 +45,28 @@ export default {
   },
 
   methods: {
-      async getCurrentUserEmail() {
-          // const user = auth.currentUser;
-          // if (user) {
-          //     return user.email; 
-          // } else {
-          //     throw new Error("No user is currently logged in.");
-          // }
+    formatTime(isoString) {
+      const date = new Date(isoString);
+    
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
 
-          return 'test@email.com'; // test functionality
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
+    },
+    
+      async getCurrentUserEmail() {
+          const user = auth.currentUser;
+          if (user) {
+              return user.email; 
+          } else {
+              throw new Error("No user is currently logged in.");
+          }
+
+          // return 'test@email.com'; // test functionality
       },
 
       async fetchListings() {
@@ -75,7 +91,7 @@ export default {
               const listingDocSnap = await getDoc(listingDocRef);
 
               if (listingDocSnap.exists()) {
-                  return { id: listingDocSnap.id, ...listingDocSnap.data() };
+                  return { id: listingDocSnap.id, showDetails: false, ...listingDocSnap.data() };
               } else {
                   console.warn(`Listing with ID ${listingId} not found.`);
                   return null;
@@ -104,8 +120,47 @@ export default {
           this.listings = this.listings.filter(listing => listing.id !== id);
       },
 
-      joinChat(sportName) {
-          alert(`Joining chat for ${sportName}!`);
+      async joinChat(match) {
+        const auth = getAuth();
+        const user = auth.currentUser;
+
+        if (!user || !user.email) {
+            alert("User not authenticated");
+            return;
+        }
+
+        const userEmail = user.email;
+        const userRef = doc(db, "users", userEmail);
+        let userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+            await setDoc(userRef, {
+            joinedChats: [],
+            favourites: [],
+            name: user.displayName || "",
+            });
+
+            userSnap = await getDoc(userRef);
+        }
+
+        const userData = userSnap.data();
+        let joinedChats = userData?.joinedChats || [];
+
+        if (joinedChats.some((chat) => chat.id === match.id)) {
+            alert("Already joined this chat!");
+            return;
+        }
+
+        joinedChats.push({
+            id: match.id,
+            title: match.title,
+            time: match.time,
+        });
+
+        await setDoc(userRef, { joinedChats }, { merge: true });
+
+        alert(`Joined ${match.title} chat!`);
+        this.$router.push("/chats");
       },
 
       toggleDetails(event) {

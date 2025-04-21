@@ -41,7 +41,7 @@
             <label for="description">Description / Additional Remarks</label>
             <textarea v-model="newListing.description" id="description" rows="4" placeholder="e.g Equipment to bring: Racket"></textarea>
 
-            <router-link to="/Added" class="submit-btn">Find Player(s)</router-link>
+            <button type="submit" class="submit-btn">Find Player(s)</button>
        
           
         </form>
@@ -92,7 +92,7 @@ export default {
             };
             try {
                 await addDoc(collection(db, "listings"), listingData);
-                this.router.push('/Explore');
+                this.router.push('/Added');
             } catch (error) {
                 console.error("Error adding listing: ", error);
                 alert("Failed to add listing. Please try again.");

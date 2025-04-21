@@ -21,7 +21,7 @@
             <h2>Joined Groups</h2>
             <select v-model="selectedRoom" class="dropdown" @change="joinRoom">
               <option v-for="room in joinedRooms" :key="room.id" :value="room.id">
-                {{ room.title }} - {{ room.time }}
+                {{ room.title }} - {{ formatTime(room.time) }}
               </option>
             </select>
           </div>
@@ -29,7 +29,7 @@
           <div class="current-room-display">
             <h3>
               Current Chat Room:
-              <span id="current-room">{{ selectedRoomObj.title }} - {{ selectedRoomObj.time }}</span>
+              <span id="current-room">{{ selectedRoomObj.title }} - {{ formatTime(selectedRoomObj.time) }}</span>
             </h3>
             <button class="leave-chat-btn" @click="leaveChat">Leave Chat</button>
           </div>
@@ -62,44 +62,68 @@
   </template>
   
   <script>
-  import { db } from '@/firebase';
-  import {
-    collection,
-    addDoc,
-    query,
-    where,
-    onSnapshot,
-    doc,
-    getDoc,
-    updateDoc
-  } from 'firebase/firestore';
-  import { getAuth, onAuthStateChanged } from 'firebase/auth';
-  import Navbar from '@/components/Navbar.vue';
-  
-  export default {
-    components: { Navbar },
-    data() {
-      return {
-        selectedRoom: '',
-        joinedRooms: [],
-        messages: {},
-        newMessage: '',
-        onlineUsers: [],
-        currentUser: {},
-      };
+import { db } from '@/firebase';
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  onSnapshot,
+  doc,
+  getDoc,
+  updateDoc,
+  orderBy,
+  serverTimestamp
+} from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import Navbar from '@/components/Navbar.vue';
+
+export default {
+  components: { Navbar },
+  data() {
+    return {
+      selectedRoom: '',
+      joinedRooms: [],
+      messages: {},
+      newMessage: '',
+      onlineUsers: [],
+      currentUser: {},
+      userNickname: '' // NEW
+    };
+  },
+  async created() {
+    const auth = getAuth();
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        this.currentUser = user;
+        await this.fetchNickname(); // NEW
+        await this.loadUserRooms();
+      } else {
+        console.warn("No user is signed in.");
+      }
+    });
+  },
+  methods: {
+    formatTime(isoString) {
+      const date = new Date(isoString);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
     },
-    async created() {
-      const auth = getAuth();
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          this.currentUser = user;
-          await this.loadUserRooms();
-        } else {
-          console.warn("No user is signed in.");
-        }
-      });
+
+    async fetchNickname() { // NEW
+      const userRef = doc(db, 'users', this.currentUser.email);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        this.userNickname = userSnap.data().nickname || this.currentUser.displayName || 'Anonymous';
+      } else {
+        this.userNickname = this.currentUser.displayName || 'Anonymous';
+      }
     },
-    methods: {
+
       async loadUserRooms() {
         const userRef = doc(db, 'users', this.currentUser.email);
         const userSnap = await getDoc(userRef);
@@ -141,7 +165,11 @@
       joinRoom() {
         if (!this.selectedRoom) return;
         const q = query(collection(db, 'messages'), where('room', '==', this.selectedRoom));
-        onSnapshot(q, (snapshot) => {
+        const sortedQuery = query(
+          q,  // Use the previously defined query (base query with 'where')
+          orderBy('createdAt', 'asc')  // Sort by createdAt in ascending order
+        );
+        onSnapshot(sortedQuery, (snapshot) => {
           this.messages[this.selectedRoom] = snapshot.docs.map(doc => doc.data());
         });
       },
@@ -152,8 +180,8 @@
           room: this.selectedRoom,
           text: this.newMessage,
           userId: this.currentUser.uid,
-          username: this.currentUser.displayName || 'You',
-          createdAt: new Date()
+          username: this.userNickanem || this.currentUser.displayName || 'You',
+          createdAt: serverTimestamp()
         });
         this.newMessage = '';
       },
@@ -231,6 +259,13 @@
     padding-bottom: 20px;
   }
   
+  .username {
+  font-weight: bold;
+  font-size: 12px;
+  color: #f3d1ff; /* soft lavender that complements purple */
+  margin-bottom: 2px;
+}
+
   .chat-box {
     flex: 1;
     overflow-y: auto;
