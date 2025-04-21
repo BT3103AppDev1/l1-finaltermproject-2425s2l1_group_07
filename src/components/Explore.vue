@@ -334,7 +334,7 @@ html, body {
 
 
 .container {
-    background-image: url('@/assets/landing bgnd.jpg');
+
     background-size: cover;
     background-position: center;
     font-family: 'Roboto', sans-serif;

@@ -72,7 +72,7 @@
 
 
   .landing-page {
-    background-image: url('@/assets/landing.jpg');
+
     background-size: cover;
     background-position: center;
     font-family: 'Roboto', sans-serif;

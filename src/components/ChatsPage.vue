@@ -233,7 +233,8 @@ export default {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background: url('landing%20bgnd.jpg') no-repeat center center fixed;
+    /*background-image: url('@/assets/landing bgnd.jpg');*/
+    /*background: url('landing bgnd.jpg') no-repeat center center fixed;*/
     background-size: cover;
   }
   
