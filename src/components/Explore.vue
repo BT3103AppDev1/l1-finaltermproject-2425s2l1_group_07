@@ -201,13 +201,13 @@ export default {
           .includes(this.searchQuery.toLowerCase());
 
       const matchesSport = this.selectedSport
-        ? match.sportType === this.selectedSport
+        ? match.sportType?.toLowerCase() === this.selectedSport.toLowerCase()
         : true;
       const matchesLocation = this.selectedLocation
-        ? match.location === this.selectedLocation
+        ? match.location?.toLowerCase() === this.selectedLocation.toLowerCase()
         : true;
       const matchesExperience = this.selectedExperience
-        ? match.experience == this.selectedExperience
+        ? match.experience?.toLowerCase() == this.selectedExperience.toLowerCase()
         : true;
 
       return (
@@ -237,8 +237,14 @@ export default {
 
         const upcoming = this.matches.filter((m) => !m.expired);
 
-        this.sportsTypes = [...new Set(upcoming.map((match) => match.sportType))];
-        this.locations = [...new Set(upcoming.map((match) => match.location))];
+        const normalizeAndTitleCase = (str) => {
+          if (!str) return "";
+          str = str.toLowerCase();
+          return str.replace(/\b\w/g, (char) => char.toUpperCase());
+        };
+
+        this.sportsTypes = [...new Set(upcoming.map((match) => normalizeAndTitleCase(match.sportType)))];
+        this.locations = [...new Set(upcoming.map((match) => normalizeAndTitleCase(match.location)))];
 
       } catch (error) {
         console.error("Error fetching listings:", error);
