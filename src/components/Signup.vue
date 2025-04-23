@@ -65,8 +65,34 @@ const db = getFirestore();
         const defaultPhoto = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRaOk8qE9ecVIYpm7FH-llQ7EWtS59dttOzza3xloSHG7nTKFW5cWU0KFwvm-1gCgRXKGk&usqp=CAU";
         const profileImageBase64 = ref("");
 
+        const checkPasswordRequirements = (password) => {
+          return {
+            minLength: password.length >= 10,
+            hasUppercase: /[A-Z]/.test(password),
+            hasLowercase: /[a-z]/.test(password),
+            hasNumber: /\d/.test(password),
+            hasSpecialChar: /[\W_]/.test(password)
+          };
+        };
+
         const signup = async () => {
           try {
+            errorMessage.value = ""; 
+
+            const checks = checkPasswordRequirements(password.value);
+            const unmetCriteria = [];
+
+            if (!checks.minLength) unmetCriteria.push("at least 10 characters");
+            if (!checks.hasUppercase) unmetCriteria.push("an uppercase letter");
+            if (!checks.hasLowercase) unmetCriteria.push("a lowercase letter");
+            if (!checks.hasNumber) unmetCriteria.push("a number");
+            if (!checks.hasSpecialChar) unmetCriteria.push("a special character");
+
+            if (unmetCriteria.length > 0) {
+              errorMessage.value = `Password must include ${unmetCriteria.join(", ")}.`;
+              return;
+            }
+
           const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
           const user = userCredential.user;
           await sendEmailVerification(user);
@@ -95,7 +121,9 @@ const db = getFirestore();
           
           router.push("/Login"); 
           } catch (error) {
-            errorMessage.value = "Signup failed. Please try again."
+            if (!errorMessage.value) {
+              errorMessage.value = "Signup failed. Please try again.";
+            }
             console.error('Signup error:', error.code, error.message);
           }
         };
