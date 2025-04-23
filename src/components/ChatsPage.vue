@@ -221,7 +221,6 @@ export default {
   .username {
   font-weight: bold;
   font-size: 12px;
-  color: ; /* soft lavender that complements purple */
   margin-bottom: 2px;
 }
 
