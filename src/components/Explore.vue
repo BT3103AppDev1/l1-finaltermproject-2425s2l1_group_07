@@ -75,6 +75,10 @@
               {{ match.experience }}
             </p>
             <p>
+              <span class="highlight">Equipment:</span>
+              {{ match.equipment.charAt(0).toUpperCase() + match.equipment.slice(1) }}
+            </p>
+            <p>
               <span class="highlight">Description:</span>
               {{ match.description }}
             </p>
@@ -109,6 +113,10 @@
             <p>
               <span class="highlight">Experience Level:</span>
               {{ match.experience }}
+            </p>
+            <p>
+              <span class="highlight">Equipment:</span>
+              {{ match.equipment.charAt(0).toUpperCase() + match.equipment.slice(1) }}
             </p>
             <p>
               <span class="highlight">Description:</span>
@@ -245,7 +253,6 @@ export default {
 
         this.sportsTypes = [...new Set(upcoming.map((match) => normalizeAndTitleCase(match.sportType)))];
         this.locations = [...new Set(upcoming.map((match) => normalizeAndTitleCase(match.location)))];
-
       } catch (error) {
         console.error("Error fetching listings:", error);
       }

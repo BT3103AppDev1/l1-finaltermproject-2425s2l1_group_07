@@ -13,7 +13,11 @@
               <p><span class="highlight">Players Needed:</span> {{ listing.playersNeeded }}</p>
               <p><span class="highlight">Cost:</span> {{ listing.cost }}</p>
               <p><span class="highlight">Experience:</span> {{ listing.experience }}</p>
-              <p v-if="listing.description"><span class="highlight">Description:</span> {{ listing.description }}</p>
+              <p>
+                <span class="highlight">Equipment:</span>
+                {{ listing.equipment.charAt(0).toUpperCase() + listing.equipment.slice(1) }}
+              </p>
+              <p><span class="highlight">Description:</span> {{ listing.description }}</p>
             </div>
             <button class="toggle-btn" @click="listing.showDetails = !listing.showDetails">
               {{ listing.showDetails ? 'Less ⬆️' : 'More ⬇️' }}
