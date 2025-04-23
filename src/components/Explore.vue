@@ -60,9 +60,6 @@
         <li v-for="match in upcomingMatches" :key="match.id" class="sport-card">
           <div class="sport-title">{{ match.title }}</div>
           <div class="sport-details">
-            <p>
-              <span class="highlight">Sport Type:</span> {{ match.sportType }}
-            </p>
             <p><span class="highlight">Location:</span> {{ match.location }}</p>
             <p><span class="highlight">Time:</span> {{ formatTime(match.time) }}</p>
             <p>
@@ -100,9 +97,6 @@
           <div class="expired-overlay">Expired</div>
           <div class="sport-title">{{ match.title }}</div>
           <div class="sport-details">
-            <p>
-              <span class="highlight">Sport Type:</span> {{ match.sportType }}
-            </p>
             <p><span class="highlight">Location:</span> {{ match.location }}</p>
             <p><span class="highlight">Time:</span> {{ match.time }}</p>
             <p>
