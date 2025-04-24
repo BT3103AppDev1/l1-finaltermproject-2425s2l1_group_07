@@ -23,7 +23,7 @@ const routes = [
   { path: "/chats", component: ChatsPage },
   { path: '/migrate', component: migrate},
   { path: "/Added", component: ListingAdded},
-  { path: "/Onboarding", component: OnboardingPage},
+  { path: "/onboarding", component: OnboardingPage},
 ];
 
 const router = createRouter({
