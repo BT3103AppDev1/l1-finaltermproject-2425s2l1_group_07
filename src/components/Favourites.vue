@@ -310,4 +310,35 @@ h1 {
     display: none;
     margin-top: 5px;
 }
+@media screen and (max-width: 768px) {
+  .container {
+    margin: 20px;
+    padding: 10px;
+  }
+
+  .sports-list {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .sport-card {
+    width: 100%;
+    max-width: 450px;
+    padding: 20px;
+  }
+
+  .unfavourite-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+    top: 8px;
+    right: 8px;
+  }
+
+  .chat-btn, .toggle-btn {
+    font-size: 14px;
+    padding: 8px;
+  }
+}
 </style>

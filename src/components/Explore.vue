@@ -638,4 +638,37 @@ h1 {
   transform: scale(1.2);
   accent-color: #5c2b87;
 }
+@media screen and (max-width: 768px) {
+  .container {
+    margin: 20px;
+    padding: 10px;
+  }
+
+  .filter-container,
+  .search-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .filter-dropdown,
+  .search-bar {
+    width: 100%;
+  }
+
+  .sports-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .sport-card {
+    width: 100%;
+    max-width: 450px; /* optional, so it doesn’t look too stretched on bigger phones */
+  }
+}
 </style>
