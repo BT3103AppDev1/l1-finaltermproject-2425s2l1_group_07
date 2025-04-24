@@ -1,6 +1,6 @@
 <template>
     <div class="onboarding-container">
-      <router-link to="/" class="logo">MatchUp</router-link>
+        <div class="logo">MatchUp</div>
   
       <div class="onboarding-card">
         <h2>Welcome to MatchUp! 🏐</h2>
