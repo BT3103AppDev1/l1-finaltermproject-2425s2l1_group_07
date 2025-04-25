@@ -60,9 +60,6 @@
         <li v-for="match in upcomingMatches" :key="match.id" class="sport-card">
           <div class="sport-title">{{ match.title }}</div>
           <div class="sport-details">
-            <p>
-              <span class="highlight">Sport Type:</span> {{ match.sportType }}
-            </p>
             <p><span class="highlight">Location:</span> {{ match.location }}</p>
             <p><span class="highlight">Time:</span> {{ formatTime(match.time) }}</p>
             <p>
@@ -73,6 +70,10 @@
             <p>
               <span class="highlight">Experience Level:</span>
               {{ match.experience }}
+            </p>
+            <p>
+              <span class="highlight">Equipment:</span>
+              {{ match.equipment.charAt(0).toUpperCase() + match.equipment.slice(1) }}
             </p>
             <p>
               <span class="highlight">Description:</span>
@@ -96,9 +97,6 @@
           <div class="expired-overlay">Expired</div>
           <div class="sport-title">{{ match.title }}</div>
           <div class="sport-details">
-            <p>
-              <span class="highlight">Sport Type:</span> {{ match.sportType }}
-            </p>
             <p><span class="highlight">Location:</span> {{ match.location }}</p>
             <p><span class="highlight">Time:</span> {{ match.time }}</p>
             <p>
@@ -109,6 +107,10 @@
             <p>
               <span class="highlight">Experience Level:</span>
               {{ match.experience }}
+            </p>
+            <p>
+              <span class="highlight">Equipment:</span>
+              {{ match.equipment.charAt(0).toUpperCase() + match.equipment.slice(1) }}
             </p>
             <p>
               <span class="highlight">Description:</span>
@@ -245,7 +247,6 @@ export default {
 
         this.sportsTypes = [...new Set(upcoming.map((match) => normalizeAndTitleCase(match.sportType)))];
         this.locations = [...new Set(upcoming.map((match) => normalizeAndTitleCase(match.location)))];
-
       } catch (error) {
         console.error("Error fetching listings:", error);
       }
@@ -636,5 +637,38 @@ h1 {
   margin-right: 8px;
   transform: scale(1.2);
   accent-color: #5c2b87;
+}
+@media screen and (max-width: 768px) {
+  .container {
+    margin: 20px;
+    padding: 10px;
+  }
+
+  .filter-container,
+  .search-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .filter-dropdown,
+  .search-bar {
+    width: 100%;
+  }
+
+  .sports-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .sport-card {
+    width: 100%;
+    max-width: 450px; /* optional, so it doesn’t look too stretched on bigger phones */
+  }
 }
 </style>

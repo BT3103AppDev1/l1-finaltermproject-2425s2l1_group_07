@@ -67,7 +67,8 @@ import {
   onSnapshot,
   doc,
   getDoc,
-  updateDoc
+  updateDoc,
+  orderBy
 } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import Navbar from '@/components/Navbar.vue';
@@ -144,9 +145,13 @@ export default {
     joinRoom() {
       if (!this.selectedRoom) return;
       const q = query(collection(db, 'messages'), where('room', '==', this.selectedRoom));
-      onSnapshot(q, (snapshot) => {
-        this.messages[this.selectedRoom] = snapshot.docs.map(doc => doc.data());
-      });
+      const sortedQuery = query(
+          q,  // Use the previously defined query (base query with 'where')
+          orderBy('createdAt', 'asc')  // Sort by createdAt in ascending order
+        );
+        onSnapshot(sortedQuery, (snapshot) => {
+          this.messages[this.selectedRoom] = snapshot.docs.map(doc => doc.data());
+        });
     },
 
     async sendMessage() {

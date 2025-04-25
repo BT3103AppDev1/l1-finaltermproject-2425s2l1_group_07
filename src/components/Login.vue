@@ -58,7 +58,7 @@ import { getDoc, doc } from 'firebase/firestore';
             const userDoc = await getDoc(doc(db, "users", user.email));
             if (!userDoc.exists() || userDoc.data().firstTime !== false) {
               alert("Login successful! Redirecting...");
-              router.push("/Onboarding");
+              router.push("/onboarding");
             } else {
               alert("Login successful! Redirecting...");
               router.push("/Explore");
